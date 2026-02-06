@@ -1,466 +1,314 @@
 /*
- * 掃除当番ローテーション表 — 円形ホイール版
- * Design: Neo-Brutalism with warm cream background
- * 外側の固定円: 掃除タスク3グループ（120°ずつ）— グレー系
- * 内側の回転円: 担当者3名（120°ずつ）— 鮮やかなカラー
- * 内側の円を回転させてローテーションを切り替える
+ * 掃除当番ローテーション表
+ * Design: Neo-Brutalism
+ * - 太い黒ボーダー (3px) + オフセットシャドウ
+ * - 鮮やかな色面: 田中=ブルー, 松丸=オレンジ, 山下=グリーン
+ * - M PLUS Rounded 1c フォント
+ * - クリーム背景 (#FFF8E7)
  */
 
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCw, RotateCcw } from "lucide-react";
+import { RotateCw, RotateCcw, ChevronRight, Sparkles } from "lucide-react";
 
-// 掃除グループ（外側の固定円 — 3等分、各120°）
-// startAngle: 各セクターの開始角度（0° = 上）
-const TASK_GROUPS = [
-  {
-    id: "group1",
-    lines: ["クイックル", "ワイパー", "─", "事務所掃除機"],
-    tasks: ["クイックルワイパー", "事務所掃除機"],
-    bgColor: "#EBEBEB",
-    startAngle: 0,
-  },
-  {
-    id: "group2",
-    lines: ["トイレ", "加湿器", "水回り"],
-    tasks: ["トイレ", "加湿器", "水回り"],
-    bgColor: "#DCDCDC",
-    startAngle: 120,
-  },
-  {
-    id: "group3",
-    lines: ["床（掃除機）", "─", "ゴミ捨て"],
-    tasks: ["床（掃除機）", "ゴミ捨て"],
-    bgColor: "#EBEBEB",
-    startAngle: 240,
-  },
+// タスク定義
+const TASKS = [
+  { id: "floor", label: "床（掃除機）", emoji: "🧹" },
+  { id: "wiper", label: "クイックルワイパー", emoji: "🪣" },
+  { id: "toilet", label: "トイレ/加湿器", emoji: "🚽" },
+  { id: "trash", label: "ゴミ捨て", emoji: "🗑️" },
+  { id: "office", label: "事務所（そうじ機）", emoji: "🏢" },
+  { id: "water", label: "水まわり", emoji: "💧" },
 ];
 
-// 担当者（内側の回転円 — 3等分、各120°）
+// 担当者定義
 const MEMBERS = [
-  { id: "tanaka", name: "田中", sectorColor: "#5B9BD5", textColor: "#fff" },
-  { id: "matsumaru", name: "松丸", sectorColor: "#F4A940", textColor: "#fff" },
-  { id: "yamashita", name: "山下", sectorColor: "#6BBF6B", textColor: "#fff" },
+  { id: "tanaka", name: "田中", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+  { id: "matsumaru", name: "松丸", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
+  { id: "yamashita", name: "山下", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
 ];
 
-// ドーナツ型の円弧パスを生成
-function describeDonutArc(
-  cx: number, cy: number,
-  outerR: number, innerR: number,
-  startAngle: number, endAngle: number
-): string {
-  const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
-  const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
-  const innerStart = polarToCartesian(cx, cy, innerR, startAngle);
-  const innerEnd = polarToCartesian(cx, cy, innerR, endAngle);
-  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-  return [
-    `M ${outerStart.x} ${outerStart.y}`,
-    `A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
-    `L ${innerEnd.x} ${innerEnd.y}`,
-    `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
-    `Z`,
-  ].join(" ");
-}
-
-// 内側の円用のパイ型パス
-function describeArc(
-  cx: number, cy: number, r: number,
-  startAngle: number, endAngle: number
-): string {
-  const start = polarToCartesian(cx, cy, r, endAngle);
-  const end = polarToCartesian(cx, cy, r, startAngle);
-  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
-}
-
-function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
-  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(angleRad),
-    y: cy + r * Math.sin(angleRad),
-  };
-}
+// 初期割り当て（元のグラフから）
+// 田中: 床, クイックルワイパー → index 0,1
+// 松丸: トイレ/加湿器, ゴミ捨て → index 2,3
+// 山下: 事務所, 水まわり → index 4,5
+const INITIAL_ROTATION = 0;
 
 export default function Home() {
-  const [rotation, setRotation] = useState(0);
+  const [rotation, setRotation] = useState(INITIAL_ROTATION);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
-  const innerRotationDeg = rotation * 120;
+  // ローテーションに基づいてタスクの割り当てを計算
+  const getAssignments = useCallback((rot: number) => {
+    const tasksPerPerson = 2;
+    const totalMembers = MEMBERS.length;
+    const assignments: { member: typeof MEMBERS[0]; tasks: typeof TASKS[number][] }[] = [];
+
+    for (let i = 0; i < totalMembers; i++) {
+      const memberIndex = ((i - rot) % totalMembers + totalMembers) % totalMembers;
+      const member = MEMBERS[memberIndex];
+      const memberTasks = TASKS.slice(i * tasksPerPerson, (i + 1) * tasksPerPerson);
+      assignments.push({ member, tasks: memberTasks });
+    }
+
+    return assignments;
+  }, []);
+
+  const assignments = getAssignments(rotation);
 
   const handleRotate = (dir: "forward" | "backward") => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setRotation((prev) => dir === "forward" ? prev + 1 : prev - 1);
-    setTimeout(() => setIsAnimating(false), 700);
+    setDirection(dir);
+    if (dir === "forward") {
+      setRotation((prev) => (prev + 1) % MEMBERS.length);
+    } else {
+      setRotation((prev) => (prev - 1 + MEMBERS.length) % MEMBERS.length);
+    }
+    setTimeout(() => setIsAnimating(false), 500);
   };
 
-  // 現在の割り当てを計算
-  const currentAssignments = useMemo(() => {
-    const normalizedRot = ((rotation % 3) + 3) % 3;
-    return TASK_GROUPS.map((group, i) => {
-      const memberIdx = (i + normalizedRot) % 3;
-      return { group, member: MEMBERS[memberIdx] };
-    });
-  }, [rotation]);
-
-  const cx = 250;
-  const cy = 250;
-  const outerR = 245;
-  const innerR = 130;
-  const gapR = innerR + 4;
-
-  // テキスト配置用の半径（ドーナツリングの中央）
-  const textR = (outerR + gapR) / 2;
+  const rotationLabel = rotation === 0 ? "初期" : `${rotation}回目`;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FFF8E7" }}>
       {/* ヘッダー */}
-      <header className="pt-6 pb-2 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1
-            className="text-3xl md:text-4xl font-extrabold tracking-tight"
-            style={{ color: "#1a1a1a", fontFamily: "'M PLUS Rounded 1c', sans-serif" }}
+      <header className="pt-8 pb-4 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            掃除当番表
-          </h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: "#888" }}>
-            内側の円を回して担当をローテーション
-          </p>
+            <div className="inline-flex items-center gap-2 mb-3">
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+              <span className="text-sm font-bold tracking-wider uppercase" style={{ color: "#666" }}>
+                Cleaning Rotation
+              </span>
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
+              掃除当番表
+            </h1>
+            <p className="mt-2 text-lg font-medium" style={{ color: "#666" }}>
+              ボタンを押してローテーションを回そう
+            </p>
+          </motion.div>
         </div>
       </header>
 
-      {/* 円形ホイール */}
+      {/* ローテーション制御 */}
       <div className="px-4 py-4">
-        <div className="max-w-lg mx-auto">
-          <div className="relative" style={{ paddingBottom: "100%" }}>
-            <svg
-              viewBox="0 0 500 500"
-              className="absolute inset-0 w-full h-full"
-              style={{ filter: "drop-shadow(3px 3px 0px rgba(0,0,0,0.12))" }}
-            >
-              {/* === 外側の円 — 掃除タスク（固定、ドーナツ型、グレー系） === */}
-              {TASK_GROUPS.map((group, i) => {
-                const startAngle = group.startAngle;
-                const endAngle = startAngle + 120;
-                const midAngle = startAngle + 60;
-                const textPos = polarToCartesian(cx, cy, textR, midAngle);
-
-                return (
-                  <g key={group.id}>
-                    <path
-                      d={describeDonutArc(cx, cy, outerR, gapR, startAngle, endAngle)}
-                      fill={group.bgColor}
-                      stroke="#aaa"
-                      strokeWidth="1.5"
-                    />
-                    {/* テキスト — 水平に配置（回転なし） */}
-                    <text
-                      x={textPos.x}
-                      y={textPos.y}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fill="#444"
-                      fontWeight="700"
-                      fontFamily="'M PLUS Rounded 1c', sans-serif"
-                    >
-                      {group.lines.map((line, lIdx) => {
-                        const isDeco = line === "─";
-                        const fontSize = isDeco ? 7 : 11;
-                        const lineH = isDeco ? 8 : 14;
-                        const heights = group.lines.map((l) => l === "─" ? 8 : 14);
-                        const totalHeight = heights.reduce((a, b) => a + b, 0);
-                        let cumOffset = 0;
-                        for (let j = 0; j < lIdx; j++) cumOffset += heights[j];
-                        const offsetY = -totalHeight / 2 + cumOffset + lineH / 2;
-
-                        return (
-                          <tspan
-                            key={lIdx}
-                            x={textPos.x}
-                            dy={lIdx === 0 ? `${offsetY}px` : `${heights[lIdx - 1]}px`}
-                            fontSize={fontSize}
-                            fill={isDeco ? "#bbb" : "#444"}
-                          >
-                            {line}
-                          </tspan>
-                        );
-                      })}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* 外側セクターの境界線 */}
-              {[0, 120, 240].map((angle, i) => {
-                const edgePoint = polarToCartesian(cx, cy, outerR, angle);
-                const innerPoint = polarToCartesian(cx, cy, gapR, angle);
-                return (
-                  <line
-                    key={`divider-${i}`}
-                    x1={innerPoint.x} y1={innerPoint.y}
-                    x2={edgePoint.x} y2={edgePoint.y}
-                    stroke="#aaa" strokeWidth="1.5"
-                  />
-                );
-              })}
-
-              <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="#aaa" strokeWidth="2" />
-              <circle cx={cx} cy={cy} r={gapR} fill="none" stroke="#aaa" strokeWidth="1.5" />
-            </svg>
-
-            {/* === 内側の回転する円 === */}
-            <div
-              className="absolute"
-              style={{
-                top: `${((cy - innerR) / 500) * 100}%`,
-                left: `${((cx - innerR) / 500) * 100}%`,
-                width: `${((innerR * 2) / 500) * 100}%`,
-                height: `${((innerR * 2) / 500) * 100}%`,
-              }}
-            >
-              <motion.div
-                className="w-full h-full"
-                animate={{ rotate: innerRotationDeg }}
-                transition={{
-                  type: "spring",
-                  stiffness: 80,
-                  damping: 20,
-                  duration: 0.6,
-                }}
-              >
-                <svg viewBox="0 0 260 260" className="w-full h-full">
-                  {MEMBERS.map((member, i) => {
-                    const startAngle = i * 120;
-                    const endAngle = (i + 1) * 120;
-                    const midAngle = startAngle + 60;
-                    const textPos = polarToCartesian(130, 130, 70, midAngle);
-                    const counterRotation = -innerRotationDeg;
-
-                    return (
-                      <g key={member.id}>
-                        <path
-                          d={describeArc(130, 130, 128, startAngle, endAngle)}
-                          fill={member.sectorColor}
-                          stroke="#555"
-                          strokeWidth="2.5"
-                        />
-                        <g transform={`translate(${textPos.x}, ${textPos.y})`}>
-                          <motion.g
-                            animate={{ rotate: counterRotation }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 80,
-                              damping: 20,
-                              duration: 0.6,
-                            }}
-                          >
-                            <text
-                              x={0} y={0}
-                              textAnchor="middle"
-                              dominantBaseline="central"
-                              fill={member.textColor}
-                              fontSize="30"
-                              fontWeight="800"
-                              fontFamily="'M PLUS Rounded 1c', sans-serif"
-                              stroke="rgba(0,0,0,0.2)"
-                              strokeWidth="0.5"
-                              paintOrder="stroke"
-                            >
-                              {member.name}
-                            </text>
-                          </motion.g>
-                        </g>
-                      </g>
-                    );
-                  })}
-
-                  <circle cx={130} cy={130} r={24} fill="#FFF8E7" stroke="#555" strokeWidth="2.5" />
-
-                  {[0, 1, 2].map((i) => {
-                    const angle = i * 120;
-                    const edgePoint = polarToCartesian(130, 130, 128, angle);
-                    const innerPoint = polarToCartesian(130, 130, 24, angle);
-                    return (
-                      <line
-                        key={`inner-divider-${i}`}
-                        x1={innerPoint.x} y1={innerPoint.y}
-                        x2={edgePoint.x} y2={edgePoint.y}
-                        stroke="#555" strokeWidth="2.5"
-                      />
-                    );
-                  })}
-
-                  <circle cx={130} cy={130} r={128} fill="none" stroke="#555" strokeWidth="2.5" />
-                </svg>
-              </motion.div>
-            </div>
-
-            {/* 中心の回転アイコン */}
-            <div
-              className="absolute"
-              style={{
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: `${(32 / 500) * 100}%`,
-                height: `${(32 / 500) * 100}%`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                pointerEvents: "none",
-              }}
-            >
-              <RotateCw className="w-full h-full" style={{ color: "#999" }} strokeWidth={2.5} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ローテーション制御ボタン */}
-      <div className="px-4 py-2">
-        <div className="max-w-md mx-auto">
-          <div
-            className="p-4 flex items-center justify-between gap-3"
-            style={{
-              backgroundColor: "#FBBF24",
-              borderRadius: "12px",
-              border: "3px solid #1a1a1a",
-              boxShadow: "4px 4px 0px #1a1a1a",
-            }}
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            className="brutal-border brutal-shadow p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-4"
+            style={{ backgroundColor: "#FBBF24", borderRadius: "12px" }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <button
-              onClick={() => handleRotate("backward")}
-              disabled={isAnimating}
-              className="flex items-center gap-2 px-4 py-2.5 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: "8px",
-                border: "3px solid #1a1a1a",
-                boxShadow: "3px 3px 0px #1a1a1a",
-                fontFamily: "'M PLUS Rounded 1c', sans-serif",
-              }}
-            >
-              <RotateCcw className="w-5 h-5" />
-              戻す
-            </button>
-
-            <div className="text-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={((rotation % 3) + 3) % 3}
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-10 h-10 flex items-center justify-center font-extrabold text-lg mx-auto"
-                  style={{
-                    backgroundColor: "#fff",
-                    borderRadius: "50%",
-                    border: "3px solid #1a1a1a",
-                    fontFamily: "'M PLUS Rounded 1c', sans-serif",
-                  }}
-                >
-                  {((rotation % 3) + 3) % 3}
-                </motion.div>
-              </AnimatePresence>
+            <div className="flex items-center gap-3">
               <div
-                className="text-xs font-bold mt-1"
-                style={{ color: "#7C5E00", fontFamily: "'M PLUS Rounded 1c', sans-serif" }}
+                className="brutal-border w-12 h-12 flex items-center justify-center font-extrabold text-xl"
+                style={{ backgroundColor: "#fff", borderRadius: "50%" }}
               >
-                ローテーション
+                {rotation}
+              </div>
+              <div>
+                <div className="text-sm font-bold" style={{ color: "#1a1a1a" }}>
+                  現在のローテーション
+                </div>
+                <div className="text-xs font-medium" style={{ color: "#7C5E00" }}>
+                  {rotationLabel}
+                </div>
               </div>
             </div>
 
-            <button
-              onClick={() => handleRotate("forward")}
-              disabled={isAnimating}
-              className="flex items-center gap-2 px-4 py-2.5 font-bold text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
-              style={{
-                backgroundColor: "#1a1a1a",
-                borderRadius: "8px",
-                border: "3px solid #1a1a1a",
-                boxShadow: "3px 3px 0px #1a1a1a",
-                fontFamily: "'M PLUS Rounded 1c', sans-serif",
-              }}
-            >
-              次へ回す
-              <RotateCw className="w-5 h-5" />
-            </button>
-          </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleRotate("backward")}
+                disabled={isAnimating}
+                className="brutal-border brutal-shadow-sm flex items-center gap-2 px-4 py-2.5 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#1a1a1a] disabled:opacity-50"
+                style={{ backgroundColor: "#fff", borderRadius: "8px" }}
+              >
+                <RotateCcw className="w-4 h-4" />
+                戻す
+              </button>
+              <button
+                onClick={() => handleRotate("forward")}
+                disabled={isAnimating}
+                className="brutal-border brutal-shadow-sm flex items-center gap-2 px-5 py-2.5 font-bold text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#1a1a1a] disabled:opacity-50"
+                style={{ backgroundColor: "#1a1a1a", borderRadius: "8px" }}
+              >
+                次へ回す
+                <RotateCw className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* 現在の割り当て一覧 */}
-      <div className="px-4 py-4 pb-10">
-        <div className="max-w-md mx-auto">
-          <div
-            className="p-4"
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "12px",
-              border: "3px solid #1a1a1a",
-              boxShadow: "3px 3px 0px #1a1a1a",
-            }}
-          >
-            <h2
-              className="text-xs font-extrabold mb-3 tracking-wider uppercase"
-              style={{ color: "#999", fontFamily: "'M PLUS Rounded 1c', sans-serif" }}
-            >
-              現在の担当
-            </h2>
-            <div className="flex flex-col gap-2.5">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={((rotation % 3) + 3) % 3}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex flex-col gap-2.5"
+      {/* 担当者カード */}
+      <div className="px-4 py-4 pb-12">
+        <div className="max-w-3xl mx-auto flex flex-col gap-5">
+          <AnimatePresence mode="wait">
+            {assignments.map(({ member, tasks }, groupIndex) => (
+              <motion.div
+                key={`${member.id}-${rotation}`}
+                className="brutal-border brutal-shadow overflow-hidden"
+                style={{ borderRadius: "16px", backgroundColor: "#fff" }}
+                initial={{
+                  x: direction === "forward" ? 60 : -60,
+                  opacity: 0,
+                  scale: 0.95,
+                }}
+                animate={{
+                  x: 0,
+                  opacity: 1,
+                  scale: 1,
+                }}
+                transition={{
+                  duration: 0.4,
+                  delay: groupIndex * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 25,
+                }}
+              >
+                {/* 担当者ヘッダー */}
+                <div
+                  className="px-5 py-3.5 flex items-center gap-3"
+                  style={{ backgroundColor: member.color }}
                 >
-                  {currentAssignments.map(({ group, member }) => (
-                    <div
-                      key={group.id}
-                      className="flex items-center gap-3 px-3 py-2.5"
+                  <div
+                    className="brutal-border w-11 h-11 flex items-center justify-center font-extrabold text-lg"
+                    style={{
+                      backgroundColor: "#fff",
+                      borderRadius: "50%",
+                      color: member.color,
+                    }}
+                  >
+                    {member.name.charAt(0)}
+                  </div>
+                  <span className="text-xl font-extrabold text-white tracking-wide">
+                    {member.name}
+                  </span>
+                  <div className="ml-auto flex items-center gap-1 text-white/80 text-sm font-bold">
+                    <span>{tasks.length}件</span>
+                  </div>
+                </div>
+
+                {/* タスクリスト */}
+                <div className="p-4 flex flex-col gap-3">
+                  {tasks.map((task, taskIndex) => (
+                    <motion.div
+                      key={task.id}
+                      className="brutal-border brutal-shadow-sm flex items-center gap-3 px-4 py-3 transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
                       style={{
-                        borderRadius: "8px",
-                        backgroundColor: `${member.sectorColor}18`,
-                        border: `2px solid ${member.sectorColor}88`,
+                        backgroundColor: member.bgColor,
+                        borderRadius: "10px",
+                      }}
+                      initial={{ x: 30, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{
+                        delay: groupIndex * 0.1 + taskIndex * 0.08 + 0.2,
+                        duration: 0.3,
                       }}
                     >
-                      <div
-                        className="w-9 h-9 flex items-center justify-center font-extrabold text-sm shrink-0"
+                      <span className="text-2xl">{task.emoji}</span>
+                      <span
+                        className="font-bold text-base"
+                        style={{ color: member.textColor }}
+                      >
+                        {task.label}
+                      </span>
+                      <ChevronRight
+                        className="w-4 h-4 ml-auto"
+                        style={{ color: member.color }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ローテーション一覧（フッター） */}
+      <div className="px-4 pb-10">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            className="brutal-border brutal-shadow-sm p-5"
+            style={{ backgroundColor: "#fff", borderRadius: "12px" }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            <h2 className="text-sm font-extrabold mb-3 tracking-wider uppercase" style={{ color: "#999" }}>
+              ローテーション早見表
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th className="text-left py-2 px-3 font-extrabold" style={{ color: "#1a1a1a" }}>
+                      回
+                    </th>
+                    {TASKS.map((task) => (
+                      <th
+                        key={task.id}
+                        className="text-center py-2 px-2 font-bold text-xs"
+                        style={{ color: "#666" }}
+                      >
+                        {task.emoji}
+                        <br />
+                        <span className="text-[10px]">{task.label.length > 5 ? task.label.slice(0, 5) + "…" : task.label}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[0, 1, 2].map((rot) => {
+                    const rowAssignments = getAssignments(rot);
+                    const isCurrentRotation = rot === rotation;
+                    return (
+                      <tr
+                        key={rot}
+                        className="transition-colors"
                         style={{
-                          borderRadius: "50%",
-                          backgroundColor: member.sectorColor,
-                          color: member.textColor,
-                          border: "2px solid #555",
-                          fontFamily: "'M PLUS Rounded 1c', sans-serif",
+                          backgroundColor: isCurrentRotation ? "#FBBF24" : "transparent",
+                          fontWeight: isCurrentRotation ? 800 : 500,
                         }}
                       >
-                        {member.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <div
-                          className="font-extrabold text-sm"
-                          style={{ color: "#1a1a1a", fontFamily: "'M PLUS Rounded 1c', sans-serif" }}
-                        >
-                          {member.name}
-                        </div>
-                        <div
-                          className="text-xs font-bold"
-                          style={{ color: "#666", fontFamily: "'M PLUS Rounded 1c', sans-serif" }}
-                        >
-                          {group.tasks.join("・")}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
+                        <td className="py-2 px-3 font-bold" style={{ borderTop: "2px solid #1a1a1a" }}>
+                          {rot === 0 ? "初期" : `${rot}回目`}
+                          {isCurrentRotation && " ◀"}
+                        </td>
+                        {TASKS.map((task, taskIdx) => {
+                          const groupIdx = Math.floor(taskIdx / 2);
+                          const assignedMember = rowAssignments[groupIdx].member;
+                          return (
+                            <td
+                              key={task.id}
+                              className="text-center py-2 px-2 font-bold text-xs"
+                              style={{
+                                borderTop: "2px solid #1a1a1a",
+                                color: assignedMember.color,
+                              }}
+                            >
+                              {assignedMember.name}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
