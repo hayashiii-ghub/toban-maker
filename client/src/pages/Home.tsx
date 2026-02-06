@@ -134,7 +134,7 @@ export default function Home() {
       `}</style>
 
       {/* ===== ヘッダー ===== */}
-      <header className="pt-8 pb-4 px-4 print-header">
+      <header className="pt-6 sm:pt-8 pb-3 sm:pb-4 px-3 sm:px-4 print-header">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ y: -20, opacity: 0 }}
@@ -148,7 +148,7 @@ export default function Home() {
               </span>
               <Sparkles className="w-5 h-5 text-yellow-500" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
               掃除当番表
             </h1>
             {/* 印刷時のみ表示 */}
@@ -160,10 +160,10 @@ export default function Home() {
       </header>
 
       {/* ===== ローテーション制御（画面のみ） ===== */}
-      <div className="px-4 py-3 no-print">
+      <div className="px-3 sm:px-4 py-3 no-print">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="brutal-border brutal-shadow p-4 flex flex-col sm:flex-row items-center justify-between gap-4"
+            className="brutal-border brutal-shadow p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4"
             style={{ backgroundColor: "#FBBF24", borderRadius: "12px" }}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -171,49 +171,49 @@ export default function Home() {
           >
             <div className="flex items-center gap-3">
               <div
-                className="brutal-border w-11 h-11 flex items-center justify-center font-extrabold text-lg"
+                className="brutal-border w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center font-extrabold text-base sm:text-lg"
                 style={{ backgroundColor: "#fff", borderRadius: "50%" }}
               >
                 {rotation}
               </div>
               <div>
-                <div className="text-sm font-bold" style={{ color: "#1a1a1a" }}>現在のローテーション</div>
-                <div className="text-xs font-medium" style={{ color: "#7C5E00" }}>{rotationLabel}</div>
+                <div className="text-xs sm:text-sm font-bold" style={{ color: "#1a1a1a" }}>現在のローテーション</div>
+                <div className="text-[10px] sm:text-xs font-medium" style={{ color: "#7C5E00" }}>{rotationLabel}</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
               <button
                 onClick={() => handleRotate("backward")}
                 disabled={isAnimating}
-                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-3 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+                className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
                 style={{ backgroundColor: "#fff", borderRadius: "8px" }}
               >
-                <RotateCcw className="w-4 h-4" /> 戻す
+                <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> 戻す
               </button>
               <button
                 onClick={() => handleRotate("forward")}
                 disabled={isAnimating}
-                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-4 py-2 font-bold text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+                className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
                 style={{ backgroundColor: "#1a1a1a", borderRadius: "8px" }}
               >
-                次へ回す <RotateCw className="w-4 h-4" />
+                次へ回す <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => window.print()}
-                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-3 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
                 style={{ backgroundColor: "#fff", borderRadius: "8px" }}
                 title="印刷"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => setShowSettings(true)}
-                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-3 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
                 style={{ backgroundColor: "#fff", borderRadius: "8px" }}
                 title="設定"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
             </div>
           </motion.div>
@@ -221,9 +221,9 @@ export default function Home() {
       </div>
 
       {/* ===== 担当カード（3グループ横並び） ===== */}
-      <div className="px-4 py-4">
+      <div className="px-3 sm:px-4 py-3 sm:py-4">
         <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <AnimatePresence mode="wait">
               {assignments.map(({ group, member }, idx) => (
                 <motion.div
@@ -246,26 +246,26 @@ export default function Home() {
                 >
                   {/* 担当者名ヘッダー */}
                   <div
-                    className="px-4 py-4 text-center"
+                    className="px-3 sm:px-4 py-3 sm:py-4 text-center"
                     style={{ backgroundColor: member.color }}
                   >
                     <div
-                      className="brutal-border w-14 h-14 mx-auto flex items-center justify-center font-extrabold text-2xl mb-2"
+                      className="brutal-border w-11 h-11 sm:w-14 sm:h-14 mx-auto flex items-center justify-center font-extrabold text-xl sm:text-2xl mb-1.5 sm:mb-2"
                       style={{ backgroundColor: "#fff", borderRadius: "50%", color: member.color }}
                     >
                       {member.name.charAt(0)}
                     </div>
-                    <div className="text-xl font-extrabold text-white tracking-wide">
+                        <div className="text-base sm:text-lg font-extrabold text-white">
                       {member.name}
                     </div>
                   </div>
 
                   {/* タスクリスト */}
-                  <div className="p-3 flex flex-col gap-2">
+                  <div className="p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2">
                     {group.tasks.map((task, tIdx) => (
                       <motion.div
                         key={tIdx}
-                        className="flex items-center gap-2 px-3 py-2.5 font-bold text-sm"
+                        className="flex items-center gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 font-bold text-xs sm:text-sm"
                         style={{
                           backgroundColor: member.bgColor,
                           borderRadius: "8px",
@@ -289,24 +289,24 @@ export default function Home() {
       </div>
 
       {/* ===== ローテーション早見表 ===== */}
-      <div className="px-4 py-4 pb-12">
+      <div className="px-3 sm:px-4 py-3 sm:py-4 pb-8 sm:pb-12">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="brutal-border brutal-shadow-sm p-5 print-card"
+            className="brutal-border brutal-shadow-sm p-3 sm:p-5 print-card"
             style={{ backgroundColor: "#fff", borderRadius: "12px" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.4 }}
           >
-            <h2 className="text-sm font-extrabold mb-4 tracking-wider uppercase" style={{ color: "#999" }}>
+            <h2 className="text-xs sm:text-sm font-extrabold mb-3 sm:mb-4 tracking-wider uppercase" style={{ color: "#999" }}>
               ローテーション早見表
             </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
+            <div className="overflow-x-auto -mx-1">
+              <table className="w-full text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr>
                     <th
-                      className="text-left py-2.5 px-3 font-extrabold text-xs"
+                      className="text-left py-2 sm:py-2.5 px-2 sm:px-3 font-extrabold text-[10px] sm:text-xs"
                       style={{ color: "#1a1a1a", borderBottom: "3px solid #1a1a1a" }}
                     >
                       回
@@ -314,12 +314,12 @@ export default function Home() {
                     {groups.map((group) => (
                       <th
                         key={group.id}
-                        className="text-center py-2.5 px-2 font-bold text-xs"
+                        className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-[10px] sm:text-xs"
                         style={{ color: "#666", borderBottom: "3px solid #1a1a1a" }}
                       >
-                        <span className="text-base">{group.emoji}</span>
+                        <span className="text-sm sm:text-base">{group.emoji}</span>
                         <br />
-                        <span className="text-[10px] leading-tight">
+                        <span className="text-[9px] sm:text-[10px] leading-tight">
                           {group.tasks.join("・")}
                         </span>
                       </th>
@@ -339,7 +339,7 @@ export default function Home() {
                         }}
                       >
                         <td
-                          className="py-2.5 px-3 font-bold text-xs"
+                          className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-[10px] sm:text-xs whitespace-nowrap"
                           style={{ borderTop: "2px solid #e5e5e5" }}
                         >
                           {rot === 0 ? "初期" : `${rot}回目`}
@@ -348,7 +348,7 @@ export default function Home() {
                         {rowAssignments.map(({ member }, gIdx) => (
                           <td
                             key={gIdx}
-                            className="text-center py-2.5 px-2 font-bold text-sm"
+                            className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
                             style={{
                               borderTop: "2px solid #e5e5e5",
                               color: member.color,
@@ -490,7 +490,7 @@ function SettingsModal({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 no-print"
       style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -499,7 +499,7 @@ function SettingsModal({
     >
       <motion.div
         ref={modalRef}
-        className="brutal-border brutal-shadow w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
+        className="brutal-border brutal-shadow w-full max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col"
         style={{ backgroundColor: "#fff", borderRadius: "16px" }}
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
