@@ -1,8 +1,8 @@
 /*
  * 掃除当番ローテーション表 — 円形ホイール版
  * Design: Neo-Brutalism with warm cream background
- * 外側の固定円: 掃除タスク3グループ（120°ずつ）
- * 内側の回転円: 担当者3名（120°ずつ）— テキストは常に正位置
+ * 外側の固定円: 掃除タスク3グループ（120°ずつ）— 落ち着いたベージュ系
+ * 内側の回転円: 担当者3名（120°ずつ）— 鮮やかなカラー
  * 内側の円を回転させてローテーションを切り替える
  */
 
@@ -10,39 +10,34 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCw, RotateCcw } from "lucide-react";
 
-// 掃除グループ（外側の固定円 — 3等分、各120°）
+// 掃除グループ（外側の固定円）
 const TASK_GROUPS = [
   {
     id: "group1",
-    label: "クイックルワイパー\n事務所掃除機",
+    lines: ["クイックル", "ワイパー", "─", "事務所", "掃除機"],
     tasks: ["クイックルワイパー", "事務所掃除機"],
-    color: "#3B82F6",
-    bgColor: "#DBEAFE",
   },
   {
     id: "group2",
-    label: "トイレ・加湿器\n水回り",
+    lines: ["トイレ", "加湿器", "水回り"],
     tasks: ["トイレ", "加湿器", "水回り"],
-    color: "#10B981",
-    bgColor: "#D1FAE5",
   },
   {
     id: "group3",
-    label: "床（掃除機）\nゴミ捨て",
+    lines: ["床（掃除機）", "─", "ゴミ捨て"],
     tasks: ["床（掃除機）", "ゴミ捨て"],
-    color: "#F97316",
-    bgColor: "#FED7AA",
   },
 ];
 
-// 担当者（内側の回転円 — 3等分、各120°）
+// 担当者（内側の回転円）
 const MEMBERS = [
-  { id: "tanaka", name: "田中", color: "#3B82F6", sectorColor: "#93BBFD" },
-  { id: "matsumaru", name: "松丸", color: "#F97316", sectorColor: "#FDB882" },
-  { id: "yamashita", name: "山下", color: "#10B981", sectorColor: "#7EDCB5" },
+  { id: "tanaka", name: "田中", sectorColor: "#5B9BD5", textColor: "#fff" },
+  { id: "matsumaru", name: "松丸", sectorColor: "#F4A940", textColor: "#fff" },
+  { id: "yamashita", name: "山下", sectorColor: "#6BBF6B", textColor: "#fff" },
 ];
 
-// SVGで円弧のパスを生成
+const OUTER_COLORS = ["#F7F2EA", "#EDE7DC", "#F7F2EA"];
+
 function describeArc(
   cx: number, cy: number, r: number,
   startAngle: number, endAngle: number
@@ -51,6 +46,25 @@ function describeArc(
   const end = polarToCartesian(cx, cy, r, startAngle);
   const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+}
+
+function describeDonutArc(
+  cx: number, cy: number,
+  outerR: number, innerR: number,
+  startAngle: number, endAngle: number
+): string {
+  const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
+  const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
+  const innerStart = polarToCartesian(cx, cy, innerR, startAngle);
+  const innerEnd = polarToCartesian(cx, cy, innerR, endAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
+    `Z`,
+  ].join(" ");
 }
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
@@ -74,7 +88,6 @@ export default function Home() {
     setTimeout(() => setIsAnimating(false), 700);
   };
 
-  // 現在の割り当てを計算
   const currentAssignments = useMemo(() => {
     const normalizedRot = ((rotation % 3) + 3) % 3;
     return TASK_GROUPS.map((group, i) => {
@@ -85,8 +98,12 @@ export default function Home() {
 
   const cx = 250;
   const cy = 250;
-  const outerR = 230;
-  const innerR = 130;
+  const outerR = 245;
+  const innerR = 120;
+  const gapR = innerR + 5;
+
+  // テキスト配置用の半径（ドーナツリングの中央）
+  const textR = (outerR + gapR) / 2 - 8;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FFF8E7" }}>
@@ -112,45 +129,58 @@ export default function Home() {
             <svg
               viewBox="0 0 500 500"
               className="absolute inset-0 w-full h-full"
-              style={{ filter: "drop-shadow(4px 4px 0px #1a1a1a)" }}
+              style={{ filter: "drop-shadow(3px 3px 0px rgba(0,0,0,0.12))" }}
             >
-              {/* === 外側の円 — 掃除タスク（固定） === */}
+              {/* === 外側の円 — 掃除タスク（固定、ドーナツ型） === */}
               {TASK_GROUPS.map((group, i) => {
                 const startAngle = i * 120;
                 const endAngle = (i + 1) * 120;
                 const midAngle = startAngle + 60;
-                const textR = (outerR + innerR) / 2 + 8;
                 const textPos = polarToCartesian(cx, cy, textR, midAngle);
-
-                const lines = group.label.split("\n");
 
                 return (
                   <g key={group.id}>
                     <path
-                      d={describeArc(cx, cy, outerR, startAngle, endAngle)}
-                      fill={group.bgColor}
-                      stroke="#1a1a1a"
-                      strokeWidth="3"
+                      d={describeDonutArc(cx, cy, outerR, gapR, startAngle, endAngle)}
+                      fill={OUTER_COLORS[i]}
+                      stroke="#C4B9A8"
+                      strokeWidth="2"
                     />
+                    {/* テキスト — 常に水平で中央配置 */}
                     <text
                       x={textPos.x}
                       y={textPos.y}
                       textAnchor="middle"
                       dominantBaseline="central"
-                      fill="#1a1a1a"
-                      fontSize="16"
+                      fill="#5C5040"
                       fontWeight="700"
                       fontFamily="'M PLUS Rounded 1c', sans-serif"
                     >
-                      {lines.map((line, lIdx) => (
-                        <tspan
-                          key={lIdx}
-                          x={textPos.x}
-                          dy={lIdx === 0 ? `${-(lines.length - 1) * 0.55}em` : "1.2em"}
-                        >
-                          {line}
-                        </tspan>
-                      ))}
+                      {group.lines.map((line, lIdx) => {
+                        const isDeco = line === "─";
+                        const totalLines = group.lines.length;
+                        const fontSize = isDeco ? 6 : 11;
+                        const lineH = isDeco ? 8 : 14;
+                        // 全体の高さを計算
+                        const heights = group.lines.map((l) => l === "─" ? 8 : 14);
+                        const totalHeight = heights.reduce((a, b) => a + b, 0);
+                        // 現在行までの累積オフセット
+                        let cumOffset = 0;
+                        for (let j = 0; j < lIdx; j++) cumOffset += heights[j];
+                        const offsetY = -totalHeight / 2 + cumOffset + lineH / 2;
+
+                        return (
+                          <tspan
+                            key={lIdx}
+                            x={textPos.x}
+                            dy={lIdx === 0 ? `${offsetY}px` : `${heights[lIdx - 1]}px`}
+                            fontSize={fontSize}
+                            fill={isDeco ? "#C4B9A8" : "#5C5040"}
+                          >
+                            {line}
+                          </tspan>
+                        );
+                      })}
                     </text>
                   </g>
                 );
@@ -160,25 +190,22 @@ export default function Home() {
               {[0, 1, 2].map((i) => {
                 const angle = i * 120;
                 const edgePoint = polarToCartesian(cx, cy, outerR, angle);
-                const innerPoint = polarToCartesian(cx, cy, innerR + 3, angle);
+                const innerPoint = polarToCartesian(cx, cy, gapR, angle);
                 return (
                   <line
                     key={`divider-${i}`}
                     x1={innerPoint.x} y1={innerPoint.y}
                     x2={edgePoint.x} y2={edgePoint.y}
-                    stroke="#1a1a1a" strokeWidth="3"
+                    stroke="#C4B9A8" strokeWidth="2"
                   />
                 );
               })}
 
-              {/* 外側の円枠 */}
-              <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="#1a1a1a" strokeWidth="3" />
-
-              {/* 内側の円枠（固定） */}
-              <circle cx={cx} cy={cy} r={innerR + 3} fill="none" stroke="#1a1a1a" strokeWidth="3" />
+              <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="#C4B9A8" strokeWidth="2.5" />
+              <circle cx={cx} cy={cy} r={gapR} fill="none" stroke="#C4B9A8" strokeWidth="2" />
             </svg>
 
-            {/* === 内側の回転する円（HTMLオーバーレイ） === */}
+            {/* === 内側の回転する円 === */}
             <div
               className="absolute"
               style={{
@@ -198,26 +225,22 @@ export default function Home() {
                   duration: 0.6,
                 }}
               >
-                <svg viewBox="0 0 260 260" className="w-full h-full">
-                  {/* 担当者セクター */}
+                <svg viewBox="0 0 284 284" className="w-full h-full">
                   {MEMBERS.map((member, i) => {
                     const startAngle = i * 120;
                     const endAngle = (i + 1) * 120;
                     const midAngle = startAngle + 60;
-                    const textPos = polarToCartesian(130, 130, 70, midAngle);
-
-                    // テキストを常に正位置にするための逆回転角度
+                    const textPos = polarToCartesian(142, 142, 76, midAngle);
                     const counterRotation = -innerRotationDeg;
 
                     return (
                       <g key={member.id}>
                         <path
-                          d={describeArc(130, 130, 128, startAngle, endAngle)}
+                          d={describeArc(142, 142, 140, startAngle, endAngle)}
                           fill={member.sectorColor}
-                          stroke="#1a1a1a"
-                          strokeWidth="3"
+                          stroke="#444"
+                          strokeWidth="2.5"
                         />
-                        {/* テキストを逆回転で正位置に保つ */}
                         <g transform={`translate(${textPos.x}, ${textPos.y})`}>
                           <motion.g
                             animate={{ rotate: counterRotation }}
@@ -229,14 +252,16 @@ export default function Home() {
                             }}
                           >
                             <text
-                              x={0}
-                              y={0}
+                              x={0} y={0}
                               textAnchor="middle"
                               dominantBaseline="central"
-                              fill="#1a1a1a"
+                              fill={member.textColor}
                               fontSize="30"
                               fontWeight="800"
                               fontFamily="'M PLUS Rounded 1c', sans-serif"
+                              stroke="#444"
+                              strokeWidth="0.5"
+                              paintOrder="stroke"
                             >
                               {member.name}
                             </text>
@@ -246,23 +271,23 @@ export default function Home() {
                     );
                   })}
 
-                  {/* 中心の小さい円 */}
-                  <circle cx={130} cy={130} r={22} fill="#FFF8E7" stroke="#1a1a1a" strokeWidth="3" />
+                  <circle cx={142} cy={142} r={24} fill="#FFF8E7" stroke="#444" strokeWidth="2.5" />
 
-                  {/* 内側の仕切り線 */}
                   {[0, 1, 2].map((i) => {
                     const angle = i * 120;
-                    const edgePoint = polarToCartesian(130, 130, 128, angle);
-                    const innerPoint = polarToCartesian(130, 130, 22, angle);
+                    const edgePoint = polarToCartesian(142, 142, 140, angle);
+                    const innerPoint = polarToCartesian(142, 142, 24, angle);
                     return (
                       <line
                         key={`inner-divider-${i}`}
                         x1={innerPoint.x} y1={innerPoint.y}
                         x2={edgePoint.x} y2={edgePoint.y}
-                        stroke="#1a1a1a" strokeWidth="3"
+                        stroke="#444" strokeWidth="2.5"
                       />
                     );
                   })}
+
+                  <circle cx={142} cy={142} r={140} fill="none" stroke="#444" strokeWidth="2.5" />
                 </svg>
               </motion.div>
             </div>
@@ -274,19 +299,15 @@ export default function Home() {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                width: `${(36 / 500) * 100}%`,
-                height: `${(36 / 500) * 100}%`,
+                width: `${(32 / 500) * 100}%`,
+                height: `${(32 / 500) * 100}%`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 pointerEvents: "none",
               }}
             >
-              <RotateCw
-                className="w-full h-full"
-                style={{ color: "#999" }}
-                strokeWidth={2.5}
-              />
+              <RotateCw className="w-full h-full" style={{ color: "#999" }} strokeWidth={2.5} />
             </div>
           </div>
         </div>
@@ -400,17 +421,17 @@ export default function Home() {
                       className="flex items-center gap-3 px-3 py-2.5"
                       style={{
                         borderRadius: "8px",
-                        backgroundColor: group.bgColor,
-                        border: "2px solid #1a1a1a",
+                        backgroundColor: `${member.sectorColor}18`,
+                        border: `2px solid ${member.sectorColor}88`,
                       }}
                     >
                       <div
                         className="w-9 h-9 flex items-center justify-center font-extrabold text-sm shrink-0"
                         style={{
                           borderRadius: "50%",
-                          backgroundColor: member.color,
-                          color: "#fff",
-                          border: "2px solid #1a1a1a",
+                          backgroundColor: member.sectorColor,
+                          color: member.textColor,
+                          border: "2px solid #444",
                           fontFamily: "'M PLUS Rounded 1c', sans-serif",
                         }}
                       >
