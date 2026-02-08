@@ -15,8 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCw, RotateCcw, Printer, Settings, X,
   Plus, Trash2, GripVertical, Save, Sparkles,
-  ChevronDown, Copy, FileText, Edit3,
-} from "lucide-react";
+  ChevronDown,  FileText, Edit3,} from "lucide-react";
 
 // ===== 型定義 =====
 interface TaskGroup {
@@ -176,6 +175,9 @@ export default function Home() {
   const [showNewSchedule, setShowNewSchedule] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
+  const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -252,20 +254,6 @@ export default function Home() {
     setShowScheduleMenu(false);
   };
 
-  const handleDuplicateSchedule = () => {
-    const duplicate: Schedule = {
-      ...JSON.parse(JSON.stringify(activeSchedule)),
-      id: `s${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      name: `${activeSchedule.name}（コピー）`,
-      rotation: 0,
-    };
-    setState((prev) => ({
-      schedules: [...prev.schedules, duplicate],
-      activeScheduleId: duplicate.id,
-    }));
-    setShowScheduleMenu(false);
-  };
-
   const handleDeleteSchedule = (id: string) => {
     if (state.schedules.length <= 1) return;
     setState((prev) => {
@@ -275,6 +263,46 @@ export default function Home() {
         activeScheduleId: prev.activeScheduleId === id ? remaining[0].id : prev.activeScheduleId,
       };
     });
+    setConfirmDelete(null);
+  };
+
+  // タブのドラッグ&ドロップ並べ替え
+  const handleTabDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedTabId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleTabDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedTabId && id !== draggedTabId) {
+      setDragOverTabId(id);
+    }
+  };
+
+  const handleTabDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedTabId || draggedTabId === targetId) {
+      setDraggedTabId(null);
+      setDragOverTabId(null);
+      return;
+    }
+    setState((prev) => {
+      const schedules = [...prev.schedules];
+      const fromIdx = schedules.findIndex((s) => s.id === draggedTabId);
+      const toIdx = schedules.findIndex((s) => s.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const [moved] = schedules.splice(fromIdx, 1);
+      schedules.splice(toIdx, 0, moved);
+      return { ...prev, schedules };
+    });
+    setDraggedTabId(null);
+    setDragOverTabId(null);
+  };
+
+  const handleTabDragEnd = () => {
+    setDraggedTabId(null);
+    setDragOverTabId(null);
   };
 
   const handleSaveName = () => {
@@ -401,17 +429,28 @@ export default function Home() {
             {state.schedules.map((schedule) => (
               <button
                 key={schedule.id}
+                draggable
+                onDragStart={(e) => handleTabDragStart(e, schedule.id)}
+                onDragOver={(e) => handleTabDragOver(e, schedule.id)}
+                onDrop={(e) => handleTabDrop(e, schedule.id)}
+                onDragEnd={handleTabDragEnd}
                 onClick={() => setState((prev) => ({ ...prev, activeScheduleId: schedule.id }))}
-                className={`brutal-border shrink-0 px-3 py-1.5 text-xs sm:text-sm font-bold transition-all duration-150 ${
+                className={`brutal-border shrink-0 px-3 py-1.5 text-xs sm:text-sm font-bold transition-all duration-150 flex items-center gap-1.5 ${
                   schedule.id === state.activeScheduleId
                     ? "brutal-shadow-sm"
                     : "opacity-70 hover:opacity-100"
+                } ${
+                  dragOverTabId === schedule.id ? "ring-2 ring-yellow-400 ring-offset-1" : ""
+                } ${
+                  draggedTabId === schedule.id ? "opacity-50" : ""
                 }`}
                 style={{
                   backgroundColor: schedule.id === state.activeScheduleId ? "#FBBF24" : "#fff",
                   borderRadius: "8px",
+                  cursor: "grab",
                 }}
               >
+                <GripVertical className="w-3 h-3 opacity-40" />
                 {schedule.name}
               </button>
             ))}
@@ -485,7 +524,7 @@ export default function Home() {
               </button>
               {state.schedules.length > 1 && (
                 <button
-                  onClick={() => handleDeleteSchedule(activeSchedule.id)}
+                  onClick={() => setConfirmDelete(activeSchedule.id)}
                   className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
                   style={{ backgroundColor: "#FEE2E2", borderRadius: "8px", color: "#DC2626" }}
                   title="この当番表を削除"
@@ -493,14 +532,6 @@ export default function Home() {
                   <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               )}
-              <button
-                onClick={handleDuplicateSchedule}
-                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
-                style={{ backgroundColor: "#fff", borderRadius: "8px" }}
-                title="この当番表を複製"
-              >
-                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
             </div>
           </motion.div>
         </div>
@@ -666,6 +697,61 @@ export default function Home() {
               onSelect={handleAddSchedule}
               onClose={() => setShowNewSchedule(false)}
             />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ===== 削除確認ダイアログ（Portal） ===== */}
+      {createPortal(
+        <AnimatePresence>
+          {confirmDelete && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center"
+              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+              onClick={() => setConfirmDelete(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="brutal-border brutal-shadow p-6 max-w-sm w-full mx-4"
+                style={{ backgroundColor: "#fff", borderRadius: "16px" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center brutal-border"
+                    style={{ backgroundColor: "#FEE2E2", borderRadius: "50%" }}
+                  >
+                    <Trash2 className="w-5 h-5" style={{ color: "#DC2626" }} />
+                  </div>
+                  <h3 className="font-extrabold text-lg">当番表を削除</h3>
+                </div>
+                <p className="text-sm mb-6" style={{ color: "#555" }}>
+                  「{state.schedules.find((s) => s.id === confirmDelete)?.name}」を削除しますか？この操作は元に戻せません。
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmDelete(null)}
+                    className="brutal-border brutal-shadow-sm flex-1 px-4 py-2.5 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                    style={{ backgroundColor: "#fff", borderRadius: "10px" }}
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSchedule(confirmDelete)}
+                    className="brutal-border brutal-shadow-sm flex-1 px-4 py-2.5 font-bold text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                    style={{ backgroundColor: "#DC2626", borderRadius: "10px" }}
+                  >
+                    削除する
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>,
         document.body
