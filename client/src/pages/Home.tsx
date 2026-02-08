@@ -1,9 +1,12 @@
 /*
- * 掃除当番ローテーション表
- * - 3グループ制: グループ1〜3にタスクをまとめ、3人でローテーション
+ * 汎用ローテーション当番表アプリ
+ * - 複数の当番表を作成・管理
+ * - テンプレートから素早く作成
+ * - ローテーション制御（次へ/戻す）
  * - ローカルストレージ保存
  * - 印刷対応（@media print）
- * - 担当者・タスク編集機能
+ * - 担当者・タスク・当番表名の編集機能
+ * - レスポンシブ対応
  */
 
 import { useState, useCallback, useEffect, useRef } from "react";
@@ -12,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCw, RotateCcw, Printer, Settings, X,
   Plus, Trash2, GripVertical, Save, Sparkles,
+  ChevronDown, Copy, FileText, Edit3,
 } from "lucide-react";
 
 // ===== 型定義 =====
@@ -29,23 +33,92 @@ interface Member {
   textColor: string;
 }
 
-interface AppState {
+interface Schedule {
+  id: string;
+  name: string;
   rotation: number;
   groups: TaskGroup[];
   members: Member[];
 }
 
-// ===== デフォルトデータ =====
-const DEFAULT_GROUPS: TaskGroup[] = [
-  { id: "g1", tasks: ["クイックルワイパー", "事務所掃除機"], emoji: "🧹" },
-  { id: "g2", tasks: ["トイレ", "加湿器", "水回り"], emoji: "🚿" },
-  { id: "g3", tasks: ["床（掃除機）", "ゴミ捨て"], emoji: "🗑️" },
-];
+interface AppState {
+  schedules: Schedule[];
+  activeScheduleId: string;
+}
 
-const DEFAULT_MEMBERS: Member[] = [
-  { id: "tanaka", name: "田中", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
-  { id: "matsumaru", name: "松丸", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
-  { id: "yamashita", name: "山下", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
+// ===== テンプレート =====
+interface ScheduleTemplate {
+  name: string;
+  emoji: string;
+  groups: TaskGroup[];
+  members: Member[];
+}
+
+const TEMPLATES: ScheduleTemplate[] = [
+  {
+    name: "掃除当番",
+    emoji: "🧹",
+    groups: [
+      { id: "g1", tasks: ["クイックルワイパー", "事務所掃除機"], emoji: "🧹" },
+      { id: "g2", tasks: ["トイレ", "加湿器", "水回り"], emoji: "🚿" },
+      { id: "g3", tasks: ["床（掃除機）", "ゴミ捨て"], emoji: "🗑️" },
+    ],
+    members: [
+      { id: "m1", name: "田中", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+      { id: "m2", name: "松丸", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
+      { id: "m3", name: "山下", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
+    ],
+  },
+  {
+    name: "給食当番",
+    emoji: "🍽️",
+    groups: [
+      { id: "g1", tasks: ["配膳"], emoji: "🍚" },
+      { id: "g2", tasks: ["片付け", "台拭き"], emoji: "🧽" },
+      { id: "g3", tasks: ["牛乳配り", "ストロー配り"], emoji: "🥛" },
+    ],
+    members: [
+      { id: "m1", name: "1班", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+      { id: "m2", name: "2班", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
+      { id: "m3", name: "3班", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
+    ],
+  },
+  {
+    name: "日直",
+    emoji: "📋",
+    groups: [
+      { id: "g1", tasks: ["朝の会", "帰りの会"], emoji: "🎤" },
+      { id: "g2", tasks: ["黒板消し", "日誌記入"], emoji: "📝" },
+    ],
+    members: [
+      { id: "m1", name: "Aさん", color: "#8B5CF6", bgColor: "#EDE9FE", textColor: "#4C1D95" },
+      { id: "m2", name: "Bさん", color: "#EC4899", bgColor: "#FCE7F3", textColor: "#831843" },
+    ],
+  },
+  {
+    name: "受付当番",
+    emoji: "🏢",
+    groups: [
+      { id: "g1", tasks: ["午前受付", "電話対応"], emoji: "📞" },
+      { id: "g2", tasks: ["午後受付", "来客対応"], emoji: "🤝" },
+      { id: "g3", tasks: ["郵便物", "備品管理"], emoji: "📦" },
+    ],
+    members: [
+      { id: "m1", name: "佐藤", color: "#14B8A6", bgColor: "#CCFBF1", textColor: "#134E4A" },
+      { id: "m2", name: "鈴木", color: "#EAB308", bgColor: "#FEF9C3", textColor: "#713F12" },
+      { id: "m3", name: "高橋", color: "#6366F1", bgColor: "#E0E7FF", textColor: "#312E81" },
+    ],
+  },
+  {
+    name: "カスタム（空白）",
+    emoji: "✨",
+    groups: [
+      { id: "g1", tasks: ["タスク1"], emoji: "📌" },
+    ],
+    members: [
+      { id: "m1", name: "メンバー1", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+    ],
+  },
 ];
 
 const MEMBER_PRESETS = [
@@ -59,7 +132,7 @@ const MEMBER_PRESETS = [
   { color: "#6366F1", bgColor: "#E0E7FF", textColor: "#312E81" },
 ];
 
-const STORAGE_KEY = "cleaning-rotation-state";
+const STORAGE_KEY = "rotation-schedule-app-state";
 
 // ===== ローカルストレージ =====
 function loadState(): AppState {
@@ -67,12 +140,14 @@ function loadState(): AppState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed.rotation === "number" && Array.isArray(parsed.groups) && Array.isArray(parsed.members)) {
+      if (parsed && Array.isArray(parsed.schedules) && parsed.activeScheduleId) {
         return parsed;
       }
     }
   } catch { /* ignore */ }
-  return { rotation: 0, groups: DEFAULT_GROUPS, members: DEFAULT_MEMBERS };
+  // デフォルト: 掃除当番テンプレートから1つ作成
+  const defaultSchedule = createScheduleFromTemplate(TEMPLATES[0]);
+  return { schedules: [defaultSchedule], activeScheduleId: defaultSchedule.id };
 }
 
 function saveState(state: AppState) {
@@ -81,19 +156,59 @@ function saveState(state: AppState) {
   } catch { /* ignore */ }
 }
 
+function createScheduleFromTemplate(template: ScheduleTemplate): Schedule {
+  return {
+    id: `s${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    name: template.name,
+    rotation: 0,
+    groups: JSON.parse(JSON.stringify(template.groups)),
+    members: JSON.parse(JSON.stringify(template.members)),
+  };
+}
+
 // ===== メインコンポーネント =====
 export default function Home() {
   const [state, setState] = useState<AppState>(loadState);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [showSettings, setShowSettings] = useState(false);
+  const [showScheduleMenu, setShowScheduleMenu] = useState(false);
+  const [showNewSchedule, setShowNewSchedule] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const { rotation, groups, members } = state;
+  const activeSchedule = state.schedules.find((s) => s.id === state.activeScheduleId)
+    || state.schedules[0];
+
+  const { rotation, groups, members } = activeSchedule;
 
   // 状態変更時にローカルストレージに保存
   useEffect(() => {
     saveState(state);
   }, [state]);
+
+  // メニュー外クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowScheduleMenu(false);
+      }
+    };
+    if (showScheduleMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showScheduleMenu]);
+
+  // 名前編集開始
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
 
   // ローテーションに基づいて割り当てを計算
   const getAssignments = useCallback((rot: number) => {
@@ -105,17 +220,68 @@ export default function Home() {
 
   const assignments = getAssignments(rotation);
 
+  const updateActiveSchedule = (updater: (s: Schedule) => Schedule) => {
+    setState((prev) => ({
+      ...prev,
+      schedules: prev.schedules.map((s) =>
+        s.id === prev.activeScheduleId ? updater(s) : s
+      ),
+    }));
+  };
+
   const handleRotate = (dir: "forward" | "backward") => {
     if (isAnimating) return;
     setIsAnimating(true);
     setDirection(dir);
-    setState((prev) => ({
-      ...prev,
+    updateActiveSchedule((s) => ({
+      ...s,
       rotation: dir === "forward"
-        ? (prev.rotation + 1) % prev.members.length
-        : (prev.rotation - 1 + prev.members.length) % prev.members.length,
+        ? (s.rotation + 1) % s.members.length
+        : (s.rotation - 1 + s.members.length) % s.members.length,
     }));
     setTimeout(() => setIsAnimating(false), 500);
+  };
+
+  const handleAddSchedule = (template: ScheduleTemplate) => {
+    const newSchedule = createScheduleFromTemplate(template);
+    setState((prev) => ({
+      schedules: [...prev.schedules, newSchedule],
+      activeScheduleId: newSchedule.id,
+    }));
+    setShowNewSchedule(false);
+    setShowScheduleMenu(false);
+  };
+
+  const handleDuplicateSchedule = () => {
+    const duplicate: Schedule = {
+      ...JSON.parse(JSON.stringify(activeSchedule)),
+      id: `s${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      name: `${activeSchedule.name}（コピー）`,
+      rotation: 0,
+    };
+    setState((prev) => ({
+      schedules: [...prev.schedules, duplicate],
+      activeScheduleId: duplicate.id,
+    }));
+    setShowScheduleMenu(false);
+  };
+
+  const handleDeleteSchedule = (id: string) => {
+    if (state.schedules.length <= 1) return;
+    setState((prev) => {
+      const remaining = prev.schedules.filter((s) => s.id !== id);
+      return {
+        schedules: remaining,
+        activeScheduleId: prev.activeScheduleId === id ? remaining[0].id : prev.activeScheduleId,
+      };
+    });
+  };
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      updateActiveSchedule((s) => ({ ...s, name: tempName.trim() }));
+    }
+    setEditingName(false);
   };
 
   const rotationLabel = rotation === 0 ? "初期" : `${rotation}回目`;
@@ -136,7 +302,7 @@ export default function Home() {
 
       {/* ===== ヘッダー ===== */}
       <header className="pt-6 sm:pt-8 pb-3 sm:pb-4 px-3 sm:px-4 print-header">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -145,13 +311,46 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 mb-2 no-print">
               <Sparkles className="w-5 h-5 text-yellow-500" />
               <span className="text-xs font-bold tracking-wider uppercase" style={{ color: "#888" }}>
-                Cleaning Rotation
+                Rotation Schedule
               </span>
               <Sparkles className="w-5 h-5 text-yellow-500" />
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
-              掃除当番表
+
+            {/* 当番表名（クリックで編集） */}
+            {editingName ? (
+              <div className="flex items-center justify-center gap-2">
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveName();
+                    if (e.key === "Escape") setEditingName(false);
+                  }}
+                  onBlur={handleSaveName}
+                  className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-center brutal-border px-3 py-1"
+                  style={{ color: "#1a1a1a", borderRadius: "8px", backgroundColor: "#fff", maxWidth: "400px" }}
+                />
+              </div>
+            ) : (
+              <button
+                className="group inline-flex items-center gap-2 no-print"
+                onClick={() => {
+                  setTempName(activeSchedule.name);
+                  setEditingName(true);
+                }}
+              >
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
+                  {activeSchedule.name}
+                </h1>
+                <Edit3 className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity" />
+              </button>
+            )}
+            <h1 className="print-only text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: "#1a1a1a" }}>
+              {activeSchedule.name}
             </h1>
+
             {/* 印刷時のみ表示 */}
             <div className="print-only mt-2 text-sm font-bold" style={{ color: "#666" }}>
               ローテーション: {rotationLabel} ／ 印刷日: {new Date().toLocaleDateString("ja-JP")}
@@ -160,9 +359,42 @@ export default function Home() {
         </div>
       </header>
 
+      {/* ===== 当番表切り替えタブ（画面のみ） ===== */}
+      <div className="px-3 sm:px-4 pb-2 no-print">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1" ref={menuRef}>
+            {state.schedules.map((schedule) => (
+              <button
+                key={schedule.id}
+                onClick={() => setState((prev) => ({ ...prev, activeScheduleId: schedule.id }))}
+                className={`brutal-border shrink-0 px-3 py-1.5 text-xs sm:text-sm font-bold transition-all duration-150 ${
+                  schedule.id === state.activeScheduleId
+                    ? "brutal-shadow-sm"
+                    : "opacity-70 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: schedule.id === state.activeScheduleId ? "#FBBF24" : "#fff",
+                  borderRadius: "8px",
+                }}
+              >
+                {schedule.name}
+              </button>
+            ))}
+            <button
+              onClick={() => setShowNewSchedule(true)}
+              className="brutal-border shrink-0 px-2.5 py-1.5 text-xs sm:text-sm font-bold transition-all duration-150 hover:bg-gray-100"
+              style={{ borderRadius: "8px", backgroundColor: "#fff" }}
+              title="新しい当番表を追加"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* ===== ローテーション制御（画面のみ） ===== */}
       <div className="px-3 sm:px-4 py-3 no-print">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div
             className="brutal-border brutal-shadow p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4"
             style={{ backgroundColor: "#FBBF24", borderRadius: "12px" }}
@@ -216,15 +448,38 @@ export default function Home() {
               >
                 <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
+              {state.schedules.length > 1 && (
+                <button
+                  onClick={() => handleDeleteSchedule(activeSchedule.id)}
+                  className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+                  style={{ backgroundColor: "#FEE2E2", borderRadius: "8px", color: "#DC2626" }}
+                  title="この当番表を削除"
+                >
+                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              )}
+              <button
+                onClick={handleDuplicateSchedule}
+                className="brutal-border brutal-shadow-sm flex items-center gap-1.5 px-2.5 sm:px-3 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+                style={{ backgroundColor: "#fff", borderRadius: "8px" }}
+                title="この当番表を複製"
+              >
+                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* ===== 担当カード（3グループ横並び） ===== */}
+      {/* ===== 担当カード ===== */}
       <div className="px-3 sm:px-4 py-3 sm:py-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="max-w-4xl mx-auto">
+          <div className={`grid gap-3 md:gap-4 ${
+            groups.length <= 2 ? "grid-cols-1 sm:grid-cols-2" :
+            groups.length === 3 ? "grid-cols-1 md:grid-cols-3" :
+            groups.length === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" :
+            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          }`}>
             <AnimatePresence mode="wait">
               {assignments.map(({ group, member }, idx) => (
                 <motion.div
@@ -251,12 +506,12 @@ export default function Home() {
                     style={{ backgroundColor: member.color }}
                   >
                     <div
-                      className="brutal-border w-11 h-11 sm:w-14 sm:h-14 mx-auto flex items-center justify-center font-extrabold text-xl sm:text-2xl mb-1.5 sm:mb-2"
+                      className="brutal-border w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1.5 sm:mb-2 flex items-center justify-center font-extrabold text-sm sm:text-base"
                       style={{ backgroundColor: "#fff", borderRadius: "50%", color: member.color }}
                     >
                       {member.name.charAt(0)}
                     </div>
-                        <div className="text-base sm:text-lg font-extrabold text-white">
+                    <div className="text-base sm:text-lg font-extrabold text-white">
                       {member.name}
                     </div>
                   </div>
@@ -291,7 +546,7 @@ export default function Home() {
 
       {/* ===== ローテーション早見表 ===== */}
       <div className="px-3 sm:px-4 py-3 sm:py-4 pb-8 sm:pb-12">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <motion.div
             className="brutal-border brutal-shadow-sm p-3 sm:p-5 print-card"
             style={{ backgroundColor: "#fff", borderRadius: "12px" }}
@@ -368,19 +623,34 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ===== 設定モーダル（Portal経由でbody直下にレンダリング） ===== */}
+      {/* ===== 新規当番表作成モーダル（Portal） ===== */}
+      {createPortal(
+        <AnimatePresence>
+          {showNewSchedule && (
+            <NewScheduleModal
+              onSelect={handleAddSchedule}
+              onClose={() => setShowNewSchedule(false)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ===== 設定モーダル（Portal） ===== */}
       {createPortal(
         <AnimatePresence>
           {showSettings && (
             <SettingsModal
+              scheduleName={activeSchedule.name}
               groups={groups}
               members={members}
-              onSave={(newGroups, newMembers) => {
-                setState((prev) => ({
-                  ...prev,
+              onSave={(newName, newGroups, newMembers) => {
+                updateActiveSchedule((s) => ({
+                  ...s,
+                  name: newName,
                   groups: newGroups,
                   members: newMembers,
-                  rotation: prev.rotation % newMembers.length,
+                  rotation: s.rotation % newMembers.length,
                 }));
                 setShowSettings(false);
               }}
@@ -394,24 +664,104 @@ export default function Home() {
   );
 }
 
+// ===== 新規当番表作成モーダル =====
+function NewScheduleModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (template: ScheduleTemplate) => void;
+  onClose: () => void;
+}) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 no-print"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={handleBackdropClick}
+    >
+      <motion.div
+        ref={modalRef}
+        className="brutal-border brutal-shadow w-full max-w-md max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col"
+        style={{ backgroundColor: "#fff", borderRadius: "16px" }}
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+      >
+        {/* ヘッダー */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "3px solid #1a1a1a" }}>
+          <h2 className="text-lg font-extrabold" style={{ color: "#1a1a1a" }}>
+            <FileText className="w-5 h-5 inline-block mr-2 -mt-0.5" />
+            新しい当番表を作成
+          </h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* テンプレート一覧 */}
+        <div className="p-5 overflow-y-auto flex flex-col gap-3">
+          <p className="text-xs font-bold mb-1" style={{ color: "#888" }}>
+            テンプレートを選択してください。後から自由に編集できます。
+          </p>
+          {TEMPLATES.map((template, idx) => (
+            <button
+              key={idx}
+              onClick={() => onSelect(template)}
+              className="brutal-border brutal-shadow-sm p-4 text-left transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+              style={{ borderRadius: "12px", backgroundColor: "#FAFAFA" }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{template.emoji}</span>
+                <div>
+                  <div className="text-sm font-extrabold" style={{ color: "#1a1a1a" }}>
+                    {template.name}
+                  </div>
+                  <div className="text-[10px] font-medium mt-0.5" style={{ color: "#888" }}>
+                    {template.groups.length}グループ ・ {template.members.length}人
+                    {template.groups.length > 0 && (
+                      <span> ・ {template.groups.map((g) => g.tasks.join("、")).join(" / ")}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ===== 設定モーダル =====
 function SettingsModal({
+  scheduleName,
   groups,
   members,
   onSave,
   onClose,
 }: {
+  scheduleName: string;
   groups: TaskGroup[];
   members: Member[];
-  onSave: (groups: TaskGroup[], members: Member[]) => void;
+  onSave: (name: string, groups: TaskGroup[], members: Member[]) => void;
   onClose: () => void;
 }) {
+  const [editName, setEditName] = useState(scheduleName);
   const [editGroups, setEditGroups] = useState<TaskGroup[]>(JSON.parse(JSON.stringify(groups)));
   const [editMembers, setEditMembers] = useState<Member[]>(JSON.parse(JSON.stringify(members)));
   const [activeTab, setActiveTab] = useState<"tasks" | "members">("tasks");
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // 外側クリックで閉じる
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -483,13 +833,12 @@ function SettingsModal({
   };
 
   const handleSave = () => {
-    // 空のタスクや名前をフィルタ
     const cleanedGroups = editGroups
       .map((g) => ({ ...g, tasks: g.tasks.filter((t) => t.trim() !== "") }))
       .filter((g) => g.tasks.length > 0);
     const cleanedMembers = editMembers.filter((m) => m.name.trim() !== "");
     if (cleanedGroups.length === 0 || cleanedMembers.length === 0) return;
-    onSave(cleanedGroups, cleanedMembers);
+    onSave(editName.trim() || scheduleName, cleanedGroups, cleanedMembers);
   };
 
   return (
@@ -517,6 +866,19 @@ function SettingsModal({
           </button>
         </div>
 
+        {/* 当番表名 */}
+        <div className="px-5 py-3" style={{ borderBottom: "3px solid #1a1a1a" }}>
+          <label className="text-xs font-bold mb-1.5 block" style={{ color: "#888" }}>当番表の名前</label>
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            className="w-full brutal-border px-3 py-2 text-sm font-bold"
+            style={{ borderRadius: "8px", backgroundColor: "#FAFAFA" }}
+            placeholder="例: 掃除当番、給食当番、日直..."
+          />
+        </div>
+
         {/* タブ */}
         <div className="flex" style={{ borderBottom: "3px solid #1a1a1a" }}>
           <button
@@ -527,7 +889,7 @@ function SettingsModal({
             }}
             onClick={() => setActiveTab("tasks")}
           >
-            掃除タスク
+            タスク
           </button>
           <button
             className="flex-1 py-3 text-sm font-bold transition-colors"
