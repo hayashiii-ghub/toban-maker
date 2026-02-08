@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RotateCw, RotateCcw, Printer, Settings, X,
   Plus, Trash2, GripVertical, Save,
-  FileText, Edit3,
+  FileText, Edit3, ArrowRight,
 } from "lucide-react";
 
 // ===== 定数 =====
@@ -1060,6 +1060,60 @@ function SettingsModal({
     e.dataTransfer.dropEffect = "move";
   };
 
+  // --- メンバードラッグ&ドロップ ---
+  const [dragMemberIdx, setDragMemberIdx] = useState<number | null>(null);
+  const [dropMemberIdx, setDropMemberIdx] = useState<number | null>(null);
+
+  const handleMemberDragStart = (e: React.DragEvent, idx: number) => {
+    setDragMemberIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, e.currentTarget.offsetWidth / 2, 24);
+    }
+  };
+
+  const handleMemberDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragMemberIdx !== null && dragMemberIdx !== idx) {
+      setDropMemberIdx(idx);
+    } else {
+      setDropMemberIdx(null);
+    }
+  };
+
+  const handleMemberDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    if (dragMemberIdx === null || dragMemberIdx === targetIdx) {
+      setDragMemberIdx(null);
+      setDropMemberIdx(null);
+      return;
+    }
+    setEditMembers((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragMemberIdx, 1);
+      next.splice(targetIdx, 0, moved);
+      return next;
+    });
+    setDragMemberIdx(null);
+    setDropMemberIdx(null);
+  };
+
+  const handleMemberDragEnd = () => {
+    setDragMemberIdx(null);
+    setDropMemberIdx(null);
+  };
+
+  // --- 現在の割り当てプレビュー計算 ---
+  const previewAssignments = useMemo(() => {
+    const validMembers = editMembers.filter((m) => m.name.trim() !== "");
+    const validGroups = editGroups
+      .map((g) => ({ ...g, tasks: g.tasks.filter((t) => t.trim() !== "") }))
+      .filter((g) => g.tasks.length > 0);
+    if (validMembers.length === 0 || validGroups.length === 0) return [];
+    return computeAssignments(validGroups, validMembers, 0);
+  }, [editGroups, editMembers]);
+
   const handleEscape = useCallback(() => onClose(), [onClose]);
   useEscapeKey(handleEscape);
 
@@ -1254,9 +1308,29 @@ function SettingsModal({
                         style={{ borderRadius: "6px", backgroundColor: "#fff" }}
                         aria-label={`グループ${gIdx + 1}の絵文字`}
                       />
-                      <span className="text-sm font-extrabold" style={{ color: "#666" }}>
-                        グループ {gIdx + 1}
-                      </span>
+                      <div>
+                        <span className="text-sm font-extrabold" style={{ color: "#666" }}>
+                          グループ {gIdx + 1}
+                        </span>
+                        {/* グループの担当者プレビュー */}
+                        {(() => {
+                          const match = previewAssignments.find((a) => a.group.id === group.id);
+                          if (!match) return null;
+                          return (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span
+                                className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-extrabold text-white"
+                                style={{ backgroundColor: match.member.color }}
+                              >
+                                {match.member.name.charAt(0)}
+                              </span>
+                              <span className="text-[10px] font-bold" style={{ color: match.member.color }}>
+                                {match.member.name}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                     <button
                       onClick={() => removeGroup(gIdx)}
@@ -1341,65 +1415,110 @@ function SettingsModal({
               </button>
             </div>
           ) : (
-            <div id="panel-members" role="tabpanel" className="flex flex-col gap-3">
-              {editMembers.map((member, mIdx) => (
+            <div id="panel-members" role="tabpanel" className="flex flex-col gap-4">
+              {/* 割り当てプレビュー */}
+              {previewAssignments.length > 0 && (
                 <div
-                  key={member.id}
-                  className="brutal-border p-4 flex flex-col gap-3"
-                  style={{ borderRadius: "12px", backgroundColor: "#FAFAFA" }}
+                  className="brutal-border p-3"
+                  style={{ borderRadius: "10px", backgroundColor: "#FFFBEB", borderColor: "#FBBF24" }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="brutal-border w-10 h-10 flex items-center justify-center font-extrabold text-sm shrink-0"
-                      style={{
-                        backgroundColor: member.color,
-                        borderRadius: "50%",
-                        color: "#fff",
-                      }}
-                      aria-hidden="true"
-                    >
-                      {member.name ? member.name.charAt(0) : "?"}
-                    </div>
-                    <input
-                      type="text"
-                      value={member.name}
-                      onChange={(e) => updateMemberName(mIdx, e.target.value)}
-                      placeholder="名前を入力"
-                      className="flex-1 brutal-border px-3 py-2 text-sm font-bold"
-                      style={{ borderRadius: "8px", backgroundColor: "#fff" }}
-                      aria-label={`担当者${mIdx + 1}の名前`}
-                    />
-                    <button
-                      onClick={() => removeMember(mIdx)}
-                      className="p-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0 disabled:opacity-30"
-                      style={{ color: "#EF4444" }}
-                      disabled={editMembers.length <= 1}
-                      aria-label={`担当者「${member.name || "未入力"}」を削除`}
-                    >
-                      <Trash2 className="w-4 h-4" aria-hidden="true" />
-                    </button>
+                  <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#92700C" }}>
+                    現在の割り当て（初期）
                   </div>
-
-                  {/* カラーパレット */}
-                  <div className="flex items-center gap-1.5 pl-13" role="radiogroup" aria-label={`${member.name || "担当者"}のカラー選択`}>
-                    {MEMBER_PRESETS.map((preset, pIdx) => (
-                      <button
-                        key={pIdx}
-                        className="w-6 h-6 rounded-full transition-transform hover:scale-110"
-                        style={{
-                          backgroundColor: preset.color,
-                          border: member.color === preset.color ? "3px solid #1a1a1a" : "2px solid #ddd",
-                          transform: member.color === preset.color ? "scale(1.15)" : "scale(1)",
-                        }}
-                        onClick={() => updateMemberColor(mIdx, pIdx)}
-                        role="radio"
-                        aria-checked={member.color === preset.color}
-                        aria-label={`カラー${pIdx + 1}`}
-                      />
+                  <div className="flex flex-col gap-1.5">
+                    {previewAssignments.map(({ group, member }, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs font-bold">
+                        <span
+                          className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white brutal-border"
+                          style={{ backgroundColor: member.color, borderWidth: "2px" }}
+                        >
+                          {member.name.charAt(0)}
+                        </span>
+                        <span style={{ color: member.color }}>{member.name}</span>
+                        <ArrowRight className="w-3 h-3 shrink-0" style={{ color: "#bbb" }} aria-hidden="true" />
+                        <span className="text-sm" aria-hidden="true">{group.emoji}</span>
+                        <span style={{ color: "#555" }}>{group.tasks.join("・")}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* メンバーリスト */}
+              {editMembers.map((member, mIdx) => {
+                const isDragging = dragMemberIdx === mIdx;
+                const isDropTarget = dropMemberIdx === mIdx;
+                return (
+                  <div
+                    key={member.id}
+                    className={`brutal-border p-4 flex flex-col gap-3 transition-all duration-150 ${
+                      isDragging ? "opacity-30 scale-[0.97]" : ""
+                    } ${isDropTarget ? "ring-2 ring-yellow-400 ring-offset-1" : ""}`}
+                    style={{ borderRadius: "12px", backgroundColor: "#FAFAFA" }}
+                    draggable
+                    onDragStart={(e) => handleMemberDragStart(e, mIdx)}
+                    onDragOver={(e) => handleMemberDragOver(e, mIdx)}
+                    onDrop={(e) => handleMemberDrop(e, mIdx)}
+                    onDragEnd={handleMemberDragEnd}
+                  >
+                    <div className="flex items-center gap-3">
+                      <GripVertical
+                        className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing"
+                        style={{ color: "#bbb" }}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="brutal-border w-10 h-10 flex items-center justify-center font-extrabold text-sm shrink-0"
+                        style={{
+                          backgroundColor: member.color,
+                          borderRadius: "50%",
+                          color: "#fff",
+                        }}
+                        aria-hidden="true"
+                      >
+                        {member.name ? member.name.charAt(0) : "?"}
+                      </div>
+                      <input
+                        type="text"
+                        value={member.name}
+                        onChange={(e) => updateMemberName(mIdx, e.target.value)}
+                        placeholder="名前を入力"
+                        className="flex-1 brutal-border px-3 py-2 text-sm font-bold"
+                        style={{ borderRadius: "8px", backgroundColor: "#fff" }}
+                        aria-label={`担当者${mIdx + 1}の名前`}
+                      />
+                      <button
+                        onClick={() => removeMember(mIdx)}
+                        className="p-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0 disabled:opacity-30"
+                        style={{ color: "#EF4444" }}
+                        disabled={editMembers.length <= 1}
+                        aria-label={`担当者「${member.name || "未入力"}」を削除`}
+                      >
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    {/* カラーパレット */}
+                    <div className="flex items-center gap-1.5 pl-[4.25rem]" role="radiogroup" aria-label={`${member.name || "担当者"}のカラー選択`}>
+                      {MEMBER_PRESETS.map((preset, pIdx) => (
+                        <button
+                          key={pIdx}
+                          className="w-6 h-6 rounded-full transition-transform hover:scale-110"
+                          style={{
+                            backgroundColor: preset.color,
+                            border: member.color === preset.color ? "3px solid #1a1a1a" : "2px solid #ddd",
+                            transform: member.color === preset.color ? "scale(1.15)" : "scale(1)",
+                          }}
+                          onClick={() => updateMemberColor(mIdx, pIdx)}
+                          role="radio"
+                          aria-checked={member.color === preset.color}
+                          aria-label={`カラー${pIdx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
 
               <button
                 onClick={addMember}
