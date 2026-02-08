@@ -179,8 +179,10 @@ function loadState(): AppState {
       }
     }
   } catch { /* ignore corrupted data */ }
+  // デフォルト初期状態: 「掃除当番」＋「カスタム（空白）」の2つ
   const defaultSchedule = createScheduleFromTemplate(TEMPLATES[0]);
-  return { schedules: [defaultSchedule], activeScheduleId: defaultSchedule.id };
+  const customSchedule = createScheduleFromTemplate(TEMPLATES[TEMPLATES.length - 1]);
+  return { schedules: [defaultSchedule, customSchedule], activeScheduleId: defaultSchedule.id };
 }
 
 function saveState(state: AppState) {
