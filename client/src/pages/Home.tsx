@@ -986,6 +986,80 @@ function SettingsModal({
   const [validationError, setValidationError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  // --- タスクドラッグ&ドロップ ---
+  const [dragTask, setDragTask] = useState<{ gIdx: number; tIdx: number } | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ gIdx: number; tIdx: number } | null>(null);
+
+  const handleTaskDragStart = (e: React.DragEvent, gIdx: number, tIdx: number) => {
+    setDragTask({ gIdx, tIdx });
+    e.dataTransfer.effectAllowed = "move";
+    // ドラッグ中のゴースト画像を少し透過させる
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, e.currentTarget.offsetWidth / 2, 20);
+    }
+  };
+
+  const handleTaskDragOver = (e: React.DragEvent, gIdx: number, tIdx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!dragTask) return;
+    if (dragTask.gIdx !== gIdx || dragTask.tIdx !== tIdx) {
+      setDropTarget({ gIdx, tIdx });
+    } else {
+      setDropTarget(null);
+    }
+  };
+
+  const handleTaskDrop = (e: React.DragEvent, targetGIdx: number, targetTIdx: number) => {
+    e.preventDefault();
+    if (!dragTask) return;
+    const { gIdx: srcGIdx, tIdx: srcTIdx } = dragTask;
+
+    if (srcGIdx === targetGIdx && srcTIdx === targetTIdx) {
+      setDragTask(null);
+      setDropTarget(null);
+      return;
+    }
+
+    setEditGroups((prev) => {
+      const next = deepClone(prev);
+      // 元のグループからタスクを取り出す
+      const [movedTask] = next[srcGIdx].tasks.splice(srcTIdx, 1);
+      // ターゲットグループに挿入
+      next[targetGIdx].tasks.splice(targetTIdx, 0, movedTask);
+      // 空になったグループは残す（タスクが0でも構造を維持）
+      return next;
+    });
+    setDragTask(null);
+    setDropTarget(null);
+  };
+
+  const handleTaskDragEnd = () => {
+    setDragTask(null);
+    setDropTarget(null);
+  };
+
+  // グループ末尾へのドロップ（タスクがない場所やリスト末尾）
+  const handleGroupDropZone = (e: React.DragEvent, gIdx: number) => {
+    e.preventDefault();
+    if (!dragTask) return;
+    const { gIdx: srcGIdx, tIdx: srcTIdx } = dragTask;
+    setEditGroups((prev) => {
+      const next = deepClone(prev);
+      const [movedTask] = next[srcGIdx].tasks.splice(srcTIdx, 1);
+      next[gIdx].tasks.push(movedTask);
+      return next;
+    });
+    setDragTask(null);
+    setDropTarget(null);
+  };
+
+  const handleGroupDragOver = (e: React.DragEvent) => {
+    if (!dragTask) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
   const handleEscape = useCallback(() => onClose(), [onClose]);
   useEscapeKey(handleEscape);
 
@@ -1195,31 +1269,58 @@ function SettingsModal({
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    {group.tasks.map((task, tIdx) => (
-                      <div key={`${group.id}-t${tIdx}`} className="flex items-center gap-2">
-                        <span className="w-4 h-4 shrink-0 flex items-center justify-center text-[10px] font-bold" style={{ color: "#bbb" }}>
-                          {tIdx + 1}
-                        </span>
-                        <input
-                          type="text"
-                          value={task}
-                          onChange={(e) => updateTask(gIdx, tIdx, e.target.value)}
-                          placeholder="タスク名を入力"
-                          className="flex-1 brutal-border px-3 py-2 text-sm font-medium"
-                          style={{ borderRadius: "8px", backgroundColor: "#fff" }}
-                          aria-label={`グループ${gIdx + 1}のタスク${tIdx + 1}`}
-                        />
-                        <button
-                          onClick={() => removeTask(gIdx, tIdx)}
-                          className="p-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                          style={{ color: "#EF4444" }}
-                          aria-label={`タスク「${task || "空"}」を削除`}
+                  <div
+                    className="flex flex-col gap-2"
+                    onDragOver={handleGroupDragOver}
+                    onDrop={(e) => handleGroupDropZone(e, gIdx)}
+                  >
+                    {group.tasks.map((task, tIdx) => {
+                      const isDragging = dragTask?.gIdx === gIdx && dragTask?.tIdx === tIdx;
+                      const isDropTarget = dropTarget?.gIdx === gIdx && dropTarget?.tIdx === tIdx;
+                      return (
+                        <div
+                          key={`${group.id}-t${tIdx}`}
+                          className={`flex items-center gap-2 transition-all duration-150 ${
+                            isDragging ? "opacity-30 scale-95" : ""
+                          } ${isDropTarget ? "translate-y-1" : ""}`}
+                          draggable
+                          onDragStart={(e) => handleTaskDragStart(e, gIdx, tIdx)}
+                          onDragOver={(e) => handleTaskDragOver(e, gIdx, tIdx)}
+                          onDrop={(e) => { e.stopPropagation(); handleTaskDrop(e, gIdx, tIdx); }}
+                          onDragEnd={handleTaskDragEnd}
                         >
-                          <X className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                      </div>
-                    ))}
+                          {/* ドロップインジケーター（上部） */}
+                          {isDropTarget && (
+                            <div
+                              className="absolute left-0 right-0 h-0.5 -top-1.5 rounded-full"
+                              style={{ backgroundColor: "#FBBF24" }}
+                            />
+                          )}
+                          <GripVertical
+                            className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing"
+                            style={{ color: "#bbb" }}
+                            aria-hidden="true"
+                          />
+                          <input
+                            type="text"
+                            value={task}
+                            onChange={(e) => updateTask(gIdx, tIdx, e.target.value)}
+                            placeholder="タスク名を入力"
+                            className="flex-1 brutal-border px-3 py-2 text-sm font-medium"
+                            style={{ borderRadius: "8px", backgroundColor: "#fff" }}
+                            aria-label={`グループ${gIdx + 1}のタスク${tIdx + 1}`}
+                          />
+                          <button
+                            onClick={() => removeTask(gIdx, tIdx)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                            style={{ color: "#EF4444" }}
+                            aria-label={`タスク「${task || "空"}」を削除`}
+                          >
+                            <X className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        </div>
+                      );
+                    })}
                     <button
                       onClick={() => addTask(gIdx)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold self-start hover:bg-gray-100 rounded-lg transition-colors"
