@@ -59,6 +59,7 @@ export function RotationQuickTable({
                 </tr>
               </thead>
               <tbody>
+                <tr aria-hidden="true"><td colSpan={groups.length + 1} style={{ height: "6px", border: "none" }} /></tr>
                 {members.map((_, rotationIndex) => {
                   const rowAssignments = computeAssignments(groups, members, rotationIndex);
                   const isCurrent = rotationIndex === rotation;
@@ -66,15 +67,16 @@ export function RotationQuickTable({
                   return (
                     <tr
                       key={rotationIndex}
-                      style={{
-                        backgroundColor: isCurrent ? "#FBBF24" : "transparent",
-                        fontWeight: isCurrent ? 800 : 500,
-                      }}
+                      style={{ fontWeight: isCurrent ? 800 : 500 }}
                       aria-current={isCurrent ? "true" : undefined}
                     >
                       <td
                         className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-[10px] sm:text-xs whitespace-nowrap"
-                        style={{ borderTop: "2px solid #e5e5e5" }}
+                        style={{
+                          borderTop: isCurrent ? "2.5px solid #FBBF24" : "2px solid #e5e5e5",
+                          borderBottom: isCurrent ? "2.5px solid #FBBF24" : "none",
+                          borderLeft: isCurrent ? "2.5px solid #FBBF24" : "none",
+                        }}
                       >
                         {rotationIndex === 0 ? "初期" : `${rotationIndex}回目`}
                         {isCurrent && " ◀"}
@@ -84,7 +86,9 @@ export function RotationQuickTable({
                           key={groupIndex}
                           className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
                           style={{
-                            borderTop: "2px solid #e5e5e5",
+                            borderTop: isCurrent ? "2.5px solid #FBBF24" : "2px solid #e5e5e5",
+                            borderBottom: isCurrent ? "2.5px solid #FBBF24" : "none",
+                            borderRight: isCurrent && groupIndex === rowAssignments.length - 1 ? "2.5px solid #FBBF24" : "none",
                             color: member.color,
                           }}
                         >
