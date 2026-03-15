@@ -38,66 +38,70 @@ export function RotationQuickTable({
                     style={{ color: "#1a1a1a", borderBottom: "3px solid #1a1a1a" }}
                     scope="col"
                   >
-                    回
+                    担当
                   </th>
-                  {groups.map((group) => (
-                    <th
-                      key={group.id}
-                      className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
-                      style={{ color: "#666", borderBottom: "3px solid #1a1a1a" }}
-                      scope="col"
-                    >
-                      <span className="text-sm sm:text-base" aria-hidden="true">
-                        {group.emoji}
-                      </span>
-                      <br />
-                      <span className="text-[11px] sm:text-xs leading-tight">
-                        {group.tasks.join("・")}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr aria-hidden="true"><td colSpan={groups.length + 1} style={{ height: "6px", border: "none" }} /></tr>
-                {members.map((_, rotationIndex) => {
-                  const rowAssignments = computeAssignments(groups, members, rotationIndex);
-                  const isCurrent = rotationIndex === rotation;
-
-                  return (
-                    <tr
-                      key={rotationIndex}
-                      style={{ fontWeight: isCurrent ? 800 : 500 }}
-                      aria-current={isCurrent ? "true" : undefined}
-                    >
-                      <td
-                        className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-xs sm:text-sm whitespace-nowrap"
+                  {members.map((_, rotationIndex) => {
+                    const isCurrent = rotationIndex === rotation;
+                    return (
+                      <th
+                        key={rotationIndex}
+                        className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm whitespace-nowrap"
                         style={{
-                          borderTop: isCurrent ? "2.5px solid #FBBF24" : "2px solid #e5e5e5",
-                          borderBottom: isCurrent ? "2.5px solid #FBBF24" : "none",
-                          borderLeft: isCurrent ? "2.5px solid #FBBF24" : "none",
+                          color: isCurrent ? "#1a1a1a" : "#666",
+                          borderBottom: "3px solid #1a1a1a",
+                          fontWeight: isCurrent ? 800 : 600,
                         }}
+                        scope="col"
                       >
                         {rotationIndex === 0 ? "初期" : `${rotationIndex}回目`}
                         {isCurrent && " ◀"}
-                      </td>
-                      {rowAssignments.map(({ member }, groupIndex) => (
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                <tr aria-hidden="true"><td colSpan={members.length + 1} style={{ height: "6px", border: "none" }} /></tr>
+                {groups.map((group, groupIndex) => (
+                  <tr key={group.id}>
+                    <td
+                      className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-xs sm:text-sm whitespace-nowrap"
+                      style={{
+                        borderTop: groupIndex > 0 ? "2px solid #e5e5e5" : "none",
+                        color: "#666",
+                      }}
+                    >
+                      <span className="text-sm sm:text-base" aria-hidden="true">
+                        {group.emoji}
+                      </span>{" "}
+                      <span className="text-[11px] sm:text-xs">
+                        {group.tasks.join("・")}
+                      </span>
+                    </td>
+                    {members.map((_, rotationIndex) => {
+                      const colAssignments = computeAssignments(groups, members, rotationIndex);
+                      const member = colAssignments[groupIndex]?.member;
+                      const isCurrent = rotationIndex === rotation;
+                      return (
                         <td
-                          key={groupIndex}
+                          key={rotationIndex}
                           className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
                           style={{
-                            borderTop: isCurrent ? "2.5px solid #FBBF24" : "2px solid #e5e5e5",
-                            borderBottom: isCurrent ? "2.5px solid #FBBF24" : "none",
-                            borderRight: isCurrent && groupIndex === rowAssignments.length - 1 ? "2.5px solid #FBBF24" : "none",
-                            color: member.color,
+                            borderTop: groupIndex > 0 ? "2px solid #e5e5e5" : "none",
+                            borderLeft: isCurrent ? "2.5px solid #FBBF24" : "none",
+                            borderRight: isCurrent ? "2.5px solid #FBBF24" : "none",
+                            borderBottom: isCurrent && groupIndex === groups.length - 1 ? "2.5px solid #FBBF24" : "none",
+                            ...(isCurrent && groupIndex === 0 ? { borderTop: "2.5px solid #FBBF24" } : {}),
+                            fontWeight: isCurrent ? 800 : 500,
+                            color: member?.color,
                           }}
                         >
-                          {member.name}
+                          {member?.name}
                         </td>
-                      ))}
-                    </tr>
-                  );
-                })}
+                      );
+                    })}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
