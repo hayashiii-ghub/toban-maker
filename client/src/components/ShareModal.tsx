@@ -129,7 +129,7 @@ export function ShareModal({ slug, editToken, scheduleName, onClose }: Props) {
             <div className="flex items-start gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "#FEF3C7" }}>
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#D97706" }} />
               <p className="text-xs" style={{ color: "#92400E" }}>
-                このURLには編集トークンが含まれています。信頼できる相手にのみ共有してください。
+                このURLを知っている人は当番表を編集できます。信頼できる相手にのみ共有してください。
               </p>
             </div>
           )}

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown } from "lucide-react";
+import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown, Copy } from "lucide-react";
 import type { TaskGroup, Member } from "@/rotation/types";
 import { MEMBER_PRESETS, colorPresetFromHex } from "@/rotation/constants";
 import { computeAssignments, generateId, deepClone } from "@/rotation/utils";
@@ -12,6 +12,7 @@ interface Props {
   members: Member[];
   canDelete: boolean;
   onSave: (name: string, groups: TaskGroup[], members: Member[]) => void;
+  onDuplicate: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
@@ -22,6 +23,7 @@ export function SettingsModal({
   members,
   canDelete,
   onSave,
+  onDuplicate,
   onDelete,
   onClose,
 }: Props) {
@@ -666,6 +668,14 @@ export function SettingsModal({
             style={{ backgroundColor: "#1a1a1a", borderRadius: "10px" }}
           >
             <Save className="w-4 h-4" aria-hidden="true" /> 保存する
+          </button>
+          <button
+            onClick={onDuplicate}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 font-bold text-sm transition-colors hover:bg-blue-50 rounded-lg"
+            style={{ color: "#3B82F6" }}
+            aria-label="この当番表を複製する"
+          >
+            <Copy className="w-4 h-4" aria-hidden="true" /> この当番表を複製
           </button>
           {canDelete && (
             <button

@@ -7,11 +7,13 @@ import { NewScheduleModal } from "@/components/NewScheduleModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { createSchedule, updateSchedule, deleteSchedule } from "@/lib/api";
-import { ANIMATION_DURATION_MS } from "@/rotation/constants";
+import { ANIMATION_DURATION_MS, STORAGE_KEY } from "@/rotation/constants";
 import type { AppState, Member, Schedule, ScheduleTemplate, TaskGroup } from "@/rotation/types";
 import {
   computeAssignments,
   createScheduleFromTemplate,
+  deepClone,
+  generateId,
   loadState,
   normalizeRotation,
   saveState,
@@ -70,6 +72,14 @@ export default function Home() {
         window.clearTimeout(animationTimeoutRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === null) {
+        setShowNewSchedule(true);
+      }
+    } catch { /* ignore */ }
   }, []);
 
   const updateActiveSchedule = useCallback((updater: (schedule: Schedule) => Schedule) => {
@@ -147,6 +157,21 @@ export default function Home() {
     });
     setConfirmDelete(null);
   }, []);
+
+  const handleDuplicateSchedule = useCallback(() => {
+    const clone: Schedule = {
+      id: generateId("s"),
+      name: `${activeSchedule.name}（コピー）`,
+      rotation: 0,
+      groups: deepClone(activeSchedule.groups),
+      members: deepClone(activeSchedule.members),
+    };
+    setState((prev) => ({
+      schedules: [...prev.schedules, clone],
+      activeScheduleId: clone.id,
+    }));
+    setShowSettings(false);
+  }, [activeSchedule]);
 
   const handleTabDrop = useCallback((targetId: string) => {
     setDraggedTabId((currentDraggedId) => {
@@ -317,6 +342,7 @@ export default function Home() {
               members={members}
               canDelete={state.schedules.length > 1}
               onSave={handleSaveSettings}
+              onDuplicate={handleDuplicateSchedule}
               onDelete={() => {
                 setShowSettings(false);
                 setConfirmDelete(activeSchedule.id);

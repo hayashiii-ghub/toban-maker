@@ -27,7 +27,7 @@ export function RotationQuickTable({
             className="text-xs sm:text-sm font-extrabold mb-3 sm:mb-4 tracking-wider uppercase"
             style={{ color: "#999" }}
           >
-            ローテーション早見表
+            当番の順番 早見表
           </h2>
           <div className="overflow-x-auto -mx-1">
             <table className="w-full text-xs sm:text-sm border-collapse" aria-label="ローテーション早見表">

@@ -149,6 +149,49 @@ export const TEMPLATES: ScheduleTemplate[] = [
       { id: "m3", name: "小林先生", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
     ],
   },
+  // ── PTA・保護者会向け ──
+  {
+    name: "旗振り（登下校見守り）当番",
+    emoji: "🚩",
+    groups: [
+      { id: "g1", tasks: ["東門の旗振り"], emoji: "🚩" },
+      { id: "g2", tasks: ["西門の旗振り"], emoji: "🚩" },
+      { id: "g3", tasks: ["交差点の旗振り"], emoji: "🚩" },
+    ],
+    members: [
+      { id: "m1", name: "山田", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+      { id: "m2", name: "佐藤", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
+      { id: "m3", name: "中村", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
+    ],
+  },
+  {
+    name: "PTA行事準備当番",
+    emoji: "🎪",
+    groups: [
+      { id: "g1", tasks: ["会場設営"], emoji: "🪑" },
+      { id: "g2", tasks: ["受付・案内"], emoji: "📋" },
+      { id: "g3", tasks: ["片付け"], emoji: "🧹" },
+    ],
+    members: [
+      { id: "m1", name: "山田", color: "#3B82F6", bgColor: "#DBEAFE", textColor: "#1E3A5F" },
+      { id: "m2", name: "鈴木", color: "#F97316", bgColor: "#FED7AA", textColor: "#7C2D12" },
+      { id: "m3", name: "高橋", color: "#10B981", bgColor: "#D1FAE5", textColor: "#064E3B" },
+    ],
+  },
+  {
+    name: "プール監視当番",
+    emoji: "🏊",
+    groups: [
+      { id: "g1", tasks: ["午前の部"], emoji: "👀" },
+      { id: "g2", tasks: ["午後の部"], emoji: "👀" },
+      { id: "g3", tasks: ["救護・記録"], emoji: "🩹" },
+    ],
+    members: [
+      { id: "m1", name: "田中", color: "#8B5CF6", bgColor: "#EDE9FE", textColor: "#4C1D95" },
+      { id: "m2", name: "伊藤", color: "#EC4899", bgColor: "#FCE7F3", textColor: "#831843" },
+      { id: "m3", name: "渡辺", color: "#EF4444", bgColor: "#FEE2E2", textColor: "#7F1D1D" },
+    ],
+  },
   // ── カスタム ──
   {
     name: "カスタム（空白）",

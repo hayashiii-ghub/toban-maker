@@ -6,11 +6,12 @@ import { TEMPLATES } from "@/rotation/constants";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
 
 const TEMPLATE_SECTIONS = [
-  { label: "✨ カスタム", from: 9, to: 10, defaultOpen: true },
+  { label: "✨ カスタム", from: 12, to: 13, defaultOpen: true },
   { label: "🏢 事務室・オフィス", from: 0, to: 2, defaultOpen: false },
   { label: "🌷 幼稚園・保育園", from: 2, to: 5, defaultOpen: false },
   { label: "🏫 小中学校（クラス用）", from: 5, to: 8, defaultOpen: false },
   { label: "🔑 職員室（先生用）", from: 8, to: 9, defaultOpen: false },
+  { label: "🏠 PTA・保護者会", from: 9, to: 12, defaultOpen: false },
 ];
 
 interface Props {
@@ -113,7 +114,7 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="flex flex-col gap-2 pt-1 pb-2">
+                      <div className="flex flex-col gap-2 py-1 px-1">
                         {templates.map((template, idx) => (
                           <button
                             key={section.from + idx}

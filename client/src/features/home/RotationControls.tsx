@@ -44,7 +44,7 @@ export function RotationControls({
             </div>
             <div className="text-center sm:text-left">
               <div className="text-xs sm:text-sm font-bold" style={{ color: "#1a1a1a" }}>
-                現在のローテーション
+                現在の順番
               </div>
               <div className="text-[10px] sm:text-xs font-medium" style={{ color: "#7C5E00" }}>
                 {rotationLabel}
