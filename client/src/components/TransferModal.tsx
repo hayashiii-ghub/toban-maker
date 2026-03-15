@@ -40,7 +40,7 @@ export function TransferModal({ slug, editToken, scheduleName, onClose }: Props)
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 no-print"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 no-print"
       style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -49,8 +49,8 @@ export function TransferModal({ slug, editToken, scheduleName, onClose }: Props)
     >
       <motion.div
         ref={modalRef}
-        className="brutal-border brutal-shadow w-full max-w-md overflow-hidden"
-        style={{ backgroundColor: "#fff", borderRadius: "16px" }}
+        className="brutal-border brutal-shadow w-full max-w-md overflow-hidden sm:rounded-2xl rounded-t-2xl rounded-b-none sm:rounded-b-2xl"
+        style={{ backgroundColor: "#fff" }}
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}

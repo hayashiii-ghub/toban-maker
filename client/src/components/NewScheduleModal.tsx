@@ -59,8 +59,8 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
     >
       <motion.div
         ref={modalRef}
-        className="brutal-border brutal-shadow w-full max-w-md max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col"
-        style={{ backgroundColor: "#fff", borderRadius: "16px" }}
+        className="brutal-border brutal-shadow w-full max-w-md max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col sm:rounded-2xl rounded-t-2xl rounded-b-none sm:rounded-b-2xl"
+        style={{ backgroundColor: "#fff" }}
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}

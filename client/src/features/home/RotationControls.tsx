@@ -36,7 +36,7 @@ export function RotationControls({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:gap-3">
             <div
               className="brutal-border w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center font-extrabold text-base sm:text-lg"
               style={{ backgroundColor: "#fff", borderRadius: "50%" }}
@@ -44,7 +44,7 @@ export function RotationControls({
             >
               {rotation}
             </div>
-            <div>
+            <div className="text-center sm:text-left">
               <div className="text-xs sm:text-sm font-bold" style={{ color: "#1a1a1a" }}>
                 現在のローテーション
               </div>

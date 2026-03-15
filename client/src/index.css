@@ -82,10 +82,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
     font-family: 'M PLUS Rounded 1c', sans-serif;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -135,16 +137,30 @@
   }
 
   .brutal-shadow {
-    box-shadow: 5px 5px 0px #1a1a1a;
-  }
-
-  .brutal-shadow-sm {
     box-shadow: 3px 3px 0px #1a1a1a;
   }
 
+  .brutal-shadow-sm {
+    box-shadow: 2px 2px 0px #1a1a1a;
+  }
+
   .brutal-shadow-hover {
-    box-shadow: 7px 7px 0px #1a1a1a;
+    box-shadow: 5px 5px 0px #1a1a1a;
     transform: translate(-2px, -2px);
+  }
+
+  @media (min-width: 640px) {
+    .brutal-shadow {
+      box-shadow: 5px 5px 0px #1a1a1a;
+    }
+
+    .brutal-shadow-sm {
+      box-shadow: 3px 3px 0px #1a1a1a;
+    }
+
+    .brutal-shadow-hover {
+      box-shadow: 7px 7px 0px #1a1a1a;
+    }
   }
 }
 
@@ -166,5 +182,13 @@
   /* Disabled button visual feedback */
   button:disabled {
     cursor: not-allowed;
+  }
+
+  /* Disable hover effects on touch devices */
+  @media (hover: none) {
+    .brutal-shadow-sm:hover {
+      box-shadow: 2px 2px 0px #1a1a1a;
+      transform: none;
+    }
   }
 }
