@@ -19,6 +19,8 @@ client/           # React SPA source
     lib/          # API client, utilities
     components/   # Shared UI components (shadcn/ui)
 server/           # Hono API
+  worker.ts       # Cloudflare Workers entry point
+  api.ts          # Hono API app definition
   routes/         # API route handlers
   db/             # Drizzle schema & migrations
 shared/           # Shared TypeScript types (frontend & backend)
