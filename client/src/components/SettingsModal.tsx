@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown, Send } from "lucide-react";
+import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown } from "lucide-react";
 import type { TaskGroup, Member } from "@/rotation/types";
 import { MEMBER_PRESETS, colorPresetFromHex } from "@/rotation/constants";
 import { computeAssignments, generateId, deepClone } from "@/rotation/utils";
@@ -11,10 +11,8 @@ interface Props {
   groups: TaskGroup[];
   members: Member[];
   canDelete: boolean;
-  canTransfer: boolean;
   onSave: (name: string, groups: TaskGroup[], members: Member[]) => void;
   onDelete: () => void;
-  onTransfer: () => void;
   onClose: () => void;
 }
 
@@ -23,10 +21,8 @@ export function SettingsModal({
   groups,
   members,
   canDelete,
-  canTransfer,
   onSave,
   onDelete,
-  onTransfer,
   onClose,
 }: Props) {
   const [editName, setEditName] = useState(scheduleName);
@@ -671,15 +667,6 @@ export function SettingsModal({
           >
             <Save className="w-4 h-4" aria-hidden="true" /> 保存する
           </button>
-          {canTransfer && (
-            <button
-              onClick={onTransfer}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 font-bold text-sm transition-colors hover:bg-blue-50 rounded-lg"
-              style={{ color: "#3B82F6" }}
-            >
-              <Send className="w-4 h-4" aria-hidden="true" /> 別端末に移す
-            </button>
-          )}
           {canDelete && (
             <button
               onClick={onDelete}

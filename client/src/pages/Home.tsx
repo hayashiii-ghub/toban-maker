@@ -21,7 +21,7 @@ import { RotationControls } from "@/features/home/RotationControls";
 import { RotationQuickTable } from "@/features/home/RotationQuickTable";
 import { ScheduleHeader } from "@/features/home/ScheduleHeader";
 import { ScheduleTabs } from "@/features/home/ScheduleTabs";
-import { TransferModal } from "@/components/TransferModal";
+import { ShareModal } from "@/components/ShareModal";
 import "./home.css";
 
 export default function Home() {
@@ -34,7 +34,7 @@ export default function Home() {
   const [tempName, setTempName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +51,7 @@ export default function Home() {
     [groups, members, rotation],
   );
 
-  useBodyScrollLock(showSettings || showNewSchedule || showTransfer || confirmDelete !== null);
+  useBodyScrollLock(showSettings || showNewSchedule || showShare || confirmDelete !== null);
 
   useEffect(() => {
     saveState(state);
@@ -199,9 +199,6 @@ export default function Home() {
 
       if (activeSchedule.slug && activeSchedule.editToken) {
         await updateSchedule(activeSchedule.slug, activeSchedule.editToken, data);
-        const shareUrl = `${window.location.origin}/s/${activeSchedule.slug}`;
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success("更新して共有URLをコピーしました");
       } else {
         const result = await createSchedule(data);
         updateActiveSchedule((schedule) => ({
@@ -209,10 +206,8 @@ export default function Home() {
           slug: result.slug,
           editToken: result.editToken,
         }));
-        const shareUrl = `${window.location.origin}/s/${result.slug}`;
-        await navigator.clipboard.writeText(shareUrl);
-        toast.success("共有URLをコピーしました");
       }
+      setShowShare(true);
     } catch {
       toast.error("保存に失敗しました");
     } finally {
@@ -322,15 +317,10 @@ export default function Home() {
               groups={groups}
               members={members}
               canDelete={state.schedules.length > 1}
-              canTransfer={!!(activeSchedule.slug && activeSchedule.editToken)}
               onSave={handleSaveSettings}
               onDelete={() => {
                 setShowSettings(false);
                 setConfirmDelete(activeSchedule.id);
-              }}
-              onTransfer={() => {
-                setShowSettings(false);
-                setShowTransfer(true);
               }}
               onClose={() => setShowSettings(false)}
             />
@@ -340,12 +330,12 @@ export default function Home() {
       )}
       {createPortal(
         <AnimatePresence>
-          {showTransfer && activeSchedule.slug && activeSchedule.editToken && (
-            <TransferModal
+          {showShare && activeSchedule.slug && activeSchedule.editToken && (
+            <ShareModal
               slug={activeSchedule.slug}
               editToken={activeSchedule.editToken}
               scheduleName={activeSchedule.name}
-              onClose={() => setShowTransfer(false)}
+              onClose={() => setShowShare(false)}
             />
           )}
         </AnimatePresence>,

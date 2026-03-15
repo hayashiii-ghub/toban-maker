@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { X, Copy, Check } from "lucide-react";
+import { X, Copy, Check, AlertTriangle } from "lucide-react";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
 import { toast } from "sonner";
+
+type ShareTab = "view" | "edit";
 
 interface Props {
   slug: string;
@@ -11,24 +13,36 @@ interface Props {
   onClose: () => void;
 }
 
-export function TransferModal({ slug, editToken, scheduleName, onClose }: Props) {
+export function ShareModal({ slug, editToken, scheduleName, onClose }: Props) {
+  const [activeTab, setActiveTab] = useState<ShareTab>("view");
   const [copied, setCopied] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const copyTimerRef = useRef<number | null>(null);
 
-  const transferUrl = useMemo(() => {
+  const viewUrl = useMemo(() => {
+    return `${window.location.origin}/s/${slug}`;
+  }, [slug]);
+
+  const editUrl = useMemo(() => {
     const json = JSON.stringify({ slug, editToken, name: scheduleName });
     const encoded = btoa(unescape(encodeURIComponent(json)));
     return `${window.location.origin}/transfer?data=${encoded}`;
   }, [slug, editToken, scheduleName]);
 
+  const currentUrl = activeTab === "view" ? viewUrl : editUrl;
+
   const handleCopy = useCallback(async () => {
-    await navigator.clipboard.writeText(transferUrl);
+    await navigator.clipboard.writeText(currentUrl);
     setCopied(true);
-    toast.success("転送URLをコピーしました");
+    toast.success(activeTab === "view" ? "閲覧用URLをコピーしました" : "編集用URLをコピーしました");
     if (copyTimerRef.current !== null) clearTimeout(copyTimerRef.current);
     copyTimerRef.current = window.setTimeout(() => setCopied(false), 2000);
-  }, [transferUrl]);
+  }, [currentUrl, activeTab]);
+
+  const handleTabChange = (tab: ShareTab) => {
+    setActiveTab(tab);
+    setCopied(false);
+  };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -56,22 +70,50 @@ export function TransferModal({ slug, editToken, scheduleName, onClose }: Props)
         exit={{ scale: 0.9, y: 20 }}
       >
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "3px solid #1a1a1a" }}>
-          <h2 className="text-lg font-extrabold" style={{ color: "#1a1a1a" }}>別端末に移す</h2>
+          <h2 className="text-lg font-extrabold" style={{ color: "#1a1a1a" }}>共有</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors" aria-label="閉じる">
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* タブ切り替え */}
+        <div className="grid grid-cols-2" style={{ borderBottom: "3px solid #1a1a1a" }}>
+          <button
+            className="py-3 text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: activeTab === "view" ? "#FBBF24" : "transparent",
+              color: "#1a1a1a",
+              borderRight: "1.5px solid #1a1a1a",
+            }}
+            onClick={() => handleTabChange("view")}
+          >
+            閲覧のみ
+          </button>
+          <button
+            className="py-3 text-sm font-bold transition-colors"
+            style={{
+              backgroundColor: activeTab === "edit" ? "#FBBF24" : "transparent",
+              color: "#1a1a1a",
+              borderLeft: "1.5px solid #1a1a1a",
+            }}
+            onClick={() => handleTabChange("edit")}
+          >
+            編集権限あり
+          </button>
+        </div>
+
         <div className="p-5 flex flex-col gap-4">
           <p className="text-sm" style={{ color: "#666" }}>
-            以下のURLを別の端末のブラウザで開くと、「{scheduleName}」の編集権限を移せます。
+            {activeTab === "view"
+              ? `「${scheduleName}」の閲覧用リンクです。このURLを共有すると、誰でも当番表を見ることができます。`
+              : `「${scheduleName}」の編集権限付きリンクです。このURLを開くと、編集権限を引き継げます。`}
           </p>
 
           <div
             className="brutal-border p-3 text-xs font-mono break-all"
             style={{ borderRadius: "8px", backgroundColor: "#FAFAFA", color: "#333" }}
           >
-            {transferUrl}
+            {currentUrl}
           </div>
 
           <button
@@ -83,9 +125,14 @@ export function TransferModal({ slug, editToken, scheduleName, onClose }: Props)
             {copied ? "コピーしました" : "URLをコピー"}
           </button>
 
-          <p className="text-xs" style={{ color: "#999" }}>
-            このURLには編集トークンが含まれています。信頼できる相手にのみ共有してください。
-          </p>
+          {activeTab === "edit" && (
+            <div className="flex items-start gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "#FEF3C7" }}>
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#D97706" }} />
+              <p className="text-xs" style={{ color: "#92400E" }}>
+                このURLには編集トークンが含まれています。信頼できる相手にのみ共有してください。
+              </p>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
