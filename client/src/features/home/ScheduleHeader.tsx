@@ -68,7 +68,7 @@ export function ScheduleHeader({
                 {scheduleName}
               </h1>
               <Edit3
-                className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity"
+                className="w-4 h-4 opacity-30 sm:opacity-0 sm:group-hover:opacity-50 transition-opacity"
                 aria-hidden="true"
               />
             </button>

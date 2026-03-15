@@ -34,7 +34,7 @@ export function RotationQuickTable({
               <thead>
                 <tr>
                   <th
-                    className="text-left py-2 sm:py-2.5 px-2 sm:px-3 font-extrabold text-[10px] sm:text-xs"
+                    className="text-left py-2 sm:py-2.5 px-2 sm:px-3 font-extrabold text-xs sm:text-sm"
                     style={{ color: "#1a1a1a", borderBottom: "3px solid #1a1a1a" }}
                     scope="col"
                   >
@@ -43,7 +43,7 @@ export function RotationQuickTable({
                   {groups.map((group) => (
                     <th
                       key={group.id}
-                      className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-[10px] sm:text-xs"
+                      className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
                       style={{ color: "#666", borderBottom: "3px solid #1a1a1a" }}
                       scope="col"
                     >
@@ -51,7 +51,7 @@ export function RotationQuickTable({
                         {group.emoji}
                       </span>
                       <br />
-                      <span className="text-[9px] sm:text-[10px] leading-tight">
+                      <span className="text-[11px] sm:text-xs leading-tight">
                         {group.tasks.join("・")}
                       </span>
                     </th>
@@ -71,7 +71,7 @@ export function RotationQuickTable({
                       aria-current={isCurrent ? "true" : undefined}
                     >
                       <td
-                        className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-[10px] sm:text-xs whitespace-nowrap"
+                        className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-xs sm:text-sm whitespace-nowrap"
                         style={{
                           borderTop: isCurrent ? "2.5px solid #FBBF24" : "2px solid #e5e5e5",
                           borderBottom: isCurrent ? "2.5px solid #FBBF24" : "none",

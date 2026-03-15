@@ -52,7 +52,7 @@ export function RotationControls({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide p-2 -m-2">
             <button
               onClick={onRotateBackward}
               disabled={isAnimating}

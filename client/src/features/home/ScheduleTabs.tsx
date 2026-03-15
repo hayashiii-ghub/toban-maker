@@ -61,8 +61,8 @@ export function ScheduleTabs({
                   cursor: "grab",
                 }}
               >
-                <GripVertical className="w-3 h-3 opacity-40" aria-hidden="true" />
-                {schedule.name}
+                <GripVertical className="w-3 h-3 opacity-40 shrink-0" aria-hidden="true" />
+                <span className="max-w-[150px] truncate">{schedule.name}</span>
               </button>
             ))}
             <button
