@@ -189,7 +189,9 @@ export default function Home() {
 
       if (activeSchedule.slug && activeSchedule.editToken) {
         await updateSchedule(activeSchedule.slug, activeSchedule.editToken, data);
-        toast.success("クラウドに更新しました");
+        const shareUrl = `${window.location.origin}/s/${activeSchedule.slug}`;
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("更新して共有URLをコピーしました");
       } else {
         const result = await createSchedule(data);
         updateActiveSchedule((schedule) => ({
