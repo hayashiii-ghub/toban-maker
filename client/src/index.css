@@ -148,6 +148,12 @@
   }
 }
 
+@media print {
+  .rotation-no-print {
+    display: none !important;
+  }
+}
+
 /* Focus visible ring for keyboard navigation */
 @layer base {
   button:focus-visible,

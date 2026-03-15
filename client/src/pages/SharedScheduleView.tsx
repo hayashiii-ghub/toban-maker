@@ -1,15 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "wouter";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useLocation } from "wouter";
+import { toast } from "sonner";
 import { getSchedule } from "@/lib/api";
 import type { ScheduleDTO } from "@/rotation/types";
-import { APP_TITLE } from "@/rotation/constants";
-import { computeAssignments } from "@/rotation/utils";
+import { APP_TITLE, STORAGE_KEY } from "@/rotation/constants";
+import { computeAssignments, generateId, loadState, saveState } from "@/rotation/utils";
 import { AssignmentsGrid } from "@/features/home/AssignmentsGrid";
 import { RotationQuickTable } from "@/features/home/RotationQuickTable";
-import { Loader2 } from "lucide-react";
+import { AdBanner } from "@/components/AdBanner";
+import { Copy, Loader2 } from "lucide-react";
 
 export default function SharedScheduleView() {
   const { slug } = useParams<{ slug: string }>();
+  const [, navigate] = useLocation();
   const [schedule, setSchedule] = useState<ScheduleDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +40,27 @@ export default function SharedScheduleView() {
     if (!schedule) return [];
     return computeAssignments(schedule.groups, schedule.members, schedule.rotation);
   }, [schedule]);
+
+  const handleImport = useCallback(() => {
+    if (!schedule) return;
+
+    const state = loadState();
+    const newSchedule = {
+      id: generateId("s"),
+      name: schedule.name,
+      rotation: schedule.rotation,
+      groups: schedule.groups.map((g) => ({ ...g, id: generateId("g") })),
+      members: schedule.members.map((m) => ({ ...m, id: generateId("m") })),
+    };
+
+    const newState = {
+      schedules: [...state.schedules, newSchedule],
+      activeScheduleId: newSchedule.id,
+    };
+    saveState(newState);
+    toast.success("当番表をコピーしました");
+    navigate("/");
+  }, [schedule, navigate]);
 
   if (loading) {
     return (
@@ -94,8 +118,18 @@ export default function SharedScheduleView() {
         rotation={schedule.rotation}
       />
 
+      <AdBanner />
+
       <div className="px-3 sm:px-4 pb-8 sm:pb-12">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={handleImport}
+            className="brutal-border brutal-shadow-sm inline-flex items-center gap-2 px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"
+            style={{ backgroundColor: "#10B981", color: "#fff", borderRadius: "8px" }}
+          >
+            <Copy className="w-4 h-4" />
+            この当番表を自分用にコピー
+          </button>
           <a
             href="/"
             className="brutal-border brutal-shadow-sm inline-flex items-center gap-2 px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a]"

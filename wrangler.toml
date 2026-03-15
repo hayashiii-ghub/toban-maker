@@ -13,3 +13,6 @@ binding = "DB"
 database_name = "toban-maker-db"
 database_id = "c115d106-597f-4616-9e44-b73864319a87"
 migrations_dir = "server/db/migrations"
+
+[triggers]
+crons = ["0 3 * * *"]

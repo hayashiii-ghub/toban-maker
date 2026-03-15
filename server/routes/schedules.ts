@@ -10,25 +10,47 @@ type Env = { Bindings: { DB: D1Database } };
 
 const app = new Hono<Env>();
 
+// SHA-256ハッシュ（Web Crypto API）
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// トークン検証（ハッシュ優先、旧カラムフォールバック）
+async function verifyToken(
+  row: { editToken: string; editTokenHash: string | null },
+  token: string,
+): Promise<boolean> {
+  if (row.editTokenHash) {
+    const hashed = await hashToken(token);
+    return hashed === row.editTokenHash;
+  }
+  // フォールバック: 旧データはプレーンテキスト比較
+  return row.editToken === token;
+}
+
 const taskGroupSchema = z.object({
-  id: z.string().min(1),
-  tasks: z.array(z.string().min(1)).min(1),
-  emoji: z.string().min(1),
+  id: z.string().min(1).max(100),
+  tasks: z.array(z.string().min(1).max(100)).min(1).max(20),
+  emoji: z.string().min(1).max(10),
 });
 
 const memberSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  color: z.string().min(1),
-  bgColor: z.string().min(1),
-  textColor: z.string().min(1),
+  id: z.string().min(1).max(100),
+  name: z.string().min(1).max(100),
+  color: z.string().min(1).max(100),
+  bgColor: z.string().min(1).max(100),
+  textColor: z.string().min(1).max(100),
 });
 
 const createScheduleSchema = z.object({
   name: z.string().min(1).max(100),
   rotation: z.number().int().default(0),
-  groups: z.array(taskGroupSchema).min(1),
-  members: z.array(memberSchema).min(1),
+  groups: z.array(taskGroupSchema).min(1).max(20),
+  members: z.array(memberSchema).min(1).max(50),
 });
 
 const updateScheduleSchema = createScheduleSchema;
@@ -45,13 +67,15 @@ app.post("/", async (c) => {
   const id = nanoid();
   const slug = nanoid(10);
   const editToken = nanoid(32);
+  const editTokenHash = await hashToken(editToken);
   const now = new Date().toISOString();
 
   const db = drizzle(c.env.DB);
   await db.insert(schedules).values({
     id,
     slug,
-    editToken,
+    editToken: "", // 空文字（ハッシュのみ保存）
+    editTokenHash,
     name: data.name,
     rotation: data.rotation,
     groupsJson: JSON.stringify(data.groups),
@@ -101,7 +125,10 @@ app.put("/:slug", async (c) => {
   const db = drizzle(c.env.DB);
 
   const [row] = await db
-    .select({ editToken: schedules.editToken })
+    .select({
+      editToken: schedules.editToken,
+      editTokenHash: schedules.editTokenHash,
+    })
     .from(schedules)
     .where(eq(schedules.slug, slug))
     .limit(1);
@@ -110,7 +137,7 @@ app.put("/:slug", async (c) => {
     return c.json({ error: "Not found" }, 404);
   }
 
-  if (row.editToken !== token) {
+  if (!(await verifyToken(row, token))) {
     return c.json({ error: "Invalid edit token" }, 403);
   }
 
@@ -147,7 +174,10 @@ app.delete("/:slug", async (c) => {
   const db = drizzle(c.env.DB);
 
   const [row] = await db
-    .select({ editToken: schedules.editToken })
+    .select({
+      editToken: schedules.editToken,
+      editTokenHash: schedules.editTokenHash,
+    })
     .from(schedules)
     .where(eq(schedules.slug, slug))
     .limit(1);
@@ -156,7 +186,7 @@ app.delete("/:slug", async (c) => {
     return c.json({ error: "Not found" }, 404);
   }
 
-  if (row.editToken !== token) {
+  if (!(await verifyToken(row, token))) {
     return c.json({ error: "Invalid edit token" }, 403);
   }
 

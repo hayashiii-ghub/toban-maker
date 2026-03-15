@@ -6,7 +6,7 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import { NewScheduleModal } from "@/components/NewScheduleModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
-import { createSchedule, updateSchedule } from "@/lib/api";
+import { createSchedule, updateSchedule, deleteSchedule } from "@/lib/api";
 import { ANIMATION_DURATION_MS } from "@/rotation/constants";
 import type { AppState, Member, Schedule, ScheduleTemplate, TaskGroup } from "@/rotation/types";
 import {
@@ -21,6 +21,7 @@ import { RotationControls } from "@/features/home/RotationControls";
 import { RotationQuickTable } from "@/features/home/RotationQuickTable";
 import { ScheduleHeader } from "@/features/home/ScheduleHeader";
 import { ScheduleTabs } from "@/features/home/ScheduleTabs";
+import { TransferModal } from "@/components/TransferModal";
 import "./home.css";
 
 export default function Home() {
@@ -33,6 +34,7 @@ export default function Home() {
   const [tempName, setTempName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +51,7 @@ export default function Home() {
     [groups, members, rotation],
   );
 
-  useBodyScrollLock(showSettings || showNewSchedule || confirmDelete !== null);
+  useBodyScrollLock(showSettings || showNewSchedule || showTransfer || confirmDelete !== null);
 
   useEffect(() => {
     saveState(state);
@@ -124,10 +126,18 @@ export default function Home() {
   }, []);
 
   const handleDeleteSchedule = useCallback((scheduleId: string) => {
+    // D1からも削除を試みる（失敗してもローカル削除は実行）
+    const schedule = state.schedules.find((s) => s.id === scheduleId);
+    if (schedule?.slug && schedule?.editToken) {
+      deleteSchedule(schedule.slug, schedule.editToken).catch(() => {
+        // D1削除失敗は無視（90日クリーンアップで自然削除される）
+      });
+    }
+
     setState((prev) => {
       if (prev.schedules.length <= 1) return prev;
 
-      const remainingSchedules = prev.schedules.filter((schedule) => schedule.id !== scheduleId);
+      const remainingSchedules = prev.schedules.filter((s) => s.id !== scheduleId);
       return {
         schedules: remainingSchedules,
         activeScheduleId: prev.activeScheduleId === scheduleId
@@ -136,7 +146,7 @@ export default function Home() {
       };
     });
     setConfirmDelete(null);
-  }, []);
+  }, [state.schedules]);
 
   const handleTabDrop = useCallback((targetId: string) => {
     setDraggedTabId((currentDraggedId) => {
@@ -312,12 +322,30 @@ export default function Home() {
               groups={groups}
               members={members}
               canDelete={state.schedules.length > 1}
+              canTransfer={!!(activeSchedule.slug && activeSchedule.editToken)}
               onSave={handleSaveSettings}
               onDelete={() => {
                 setShowSettings(false);
                 setConfirmDelete(activeSchedule.id);
               }}
+              onTransfer={() => {
+                setShowSettings(false);
+                setShowTransfer(true);
+              }}
               onClose={() => setShowSettings(false)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+      {createPortal(
+        <AnimatePresence>
+          {showTransfer && activeSchedule.slug && activeSchedule.editToken && (
+            <TransferModal
+              slug={activeSchedule.slug}
+              editToken={activeSchedule.editToken}
+              scheduleName={activeSchedule.name}
+              onClose={() => setShowTransfer(false)}
             />
           )}
         </AnimatePresence>,
