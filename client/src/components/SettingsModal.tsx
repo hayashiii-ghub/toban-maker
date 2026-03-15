@@ -253,6 +253,27 @@ export function SettingsModal({
     setEditMembers((prev) => prev.map((m, i) => (i === idx ? { ...m, name } : m)));
   };
 
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+
+  const bulkNames = useMemo(
+    () => bulkText.split("\n").map((s) => s.trim()).filter(Boolean),
+    [bulkText]
+  );
+
+  const handleBulkAdd = () => {
+    if (bulkNames.length === 0) return;
+    setEditMembers((prev) => {
+      const newMembers = bulkNames.map((name, i) => {
+        const preset = MEMBER_PRESETS[(prev.length + i) % MEMBER_PRESETS.length];
+        return { id: generateId("m"), name, ...preset };
+      });
+      return [...prev, ...newMembers];
+    });
+    setBulkText("");
+    setBulkMode(false);
+  };
+
   const [openColorIdx, setOpenColorIdx] = useState<number | null>(null);
 
   const updateMemberColorPreset = (idx: number, presetIdx: number) => {
@@ -647,13 +668,48 @@ export function SettingsModal({
                     );
                   })}
 
-                  <button
-                    onClick={addMember}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold self-start hover:bg-gray-100 rounded-lg transition-colors"
-                    style={{ color: "#666" }}
-                  >
-                    <Plus className="w-3.5 h-3.5" aria-hidden="true" /> 担当者を追加
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={addMember}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 rounded-lg transition-colors"
+                      style={{ color: "#666" }}
+                    >
+                      <Plus className="w-3.5 h-3.5" aria-hidden="true" /> 担当者を追加
+                    </button>
+                    <button
+                      onClick={() => setBulkMode((v) => !v)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 rounded-lg transition-colors"
+                      style={{ color: bulkMode ? "#1a1a1a" : "#666" }}
+                    >
+                      📋 一括追加
+                    </button>
+                  </div>
+
+                  {bulkMode && (
+                    <div className="flex flex-col gap-2 mt-1">
+                      <textarea
+                        value={bulkText}
+                        onChange={(e) => setBulkText(e.target.value)}
+                        placeholder="名前を1行に1人ずつ入力"
+                        rows={5}
+                        className="brutal-border px-3 py-2 text-sm font-medium resize-none"
+                        style={{ borderRadius: "8px", backgroundColor: "#fff" }}
+                      />
+                      {bulkNames.length > 0 && (
+                        <p className="text-xs font-bold" style={{ color: "#666" }}>
+                          {bulkNames.length}人を追加します
+                        </p>
+                      )}
+                      <button
+                        onClick={handleBulkAdd}
+                        disabled={bulkNames.length === 0}
+                        className="brutal-border brutal-shadow-sm flex items-center justify-center gap-2 px-4 py-2.5 font-bold text-sm text-white transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] disabled:opacity-40 disabled:hover:translate-x-0 disabled:hover:translate-y-0"
+                        style={{ backgroundColor: "#1a1a1a", borderRadius: "10px" }}
+                      >
+                        追加する
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
