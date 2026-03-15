@@ -32,14 +32,11 @@ export default function Home() {
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [showSettings, setShowSettings] = useState(false);
   const [showNewSchedule, setShowNewSchedule] = useState(false);
-  const [editingName, setEditingName] = useState(false);
-  const [tempName, setTempName] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
   const animationTimeoutRef = useRef<number | null>(null);
 
   const activeSchedule = useMemo(() => {
@@ -58,13 +55,6 @@ export default function Home() {
   useEffect(() => {
     saveState(state);
   }, [state]);
-
-  useEffect(() => {
-    if (editingName && nameInputRef.current) {
-      nameInputRef.current.focus();
-      nameInputRef.current.select();
-    }
-  }, [editingName]);
 
   useEffect(() => {
     return () => {
@@ -193,14 +183,6 @@ export default function Home() {
     setDragOverTabId(null);
   }, []);
 
-  const handleSaveName = useCallback(() => {
-    const nextName = tempName.trim();
-    if (nextName) {
-      updateActiveSchedule((schedule) => ({ ...schedule, name: nextName }));
-    }
-    setEditingName(false);
-  }, [tempName, updateActiveSchedule]);
-
   const handleSaveSettings = useCallback((name: string, nextGroups: TaskGroup[], nextMembers: Member[]) => {
     updateActiveSchedule((schedule) => ({
       ...schedule,
@@ -245,18 +227,8 @@ export default function Home() {
   return (
     <main className="rotation-page min-h-screen" style={{ backgroundColor: "#FFF8E7" }}>
       <ScheduleHeader
-        editingName={editingName}
-        tempName={tempName}
         scheduleName={activeSchedule.name}
         rotationLabel={rotationLabel}
-        nameInputRef={nameInputRef}
-        onTempNameChange={setTempName}
-        onSaveName={handleSaveName}
-        onCancelEditing={() => setEditingName(false)}
-        onStartEditing={() => {
-          setTempName(activeSchedule.name);
-          setEditingName(true);
-        }}
       />
 
       <ScheduleTabs
