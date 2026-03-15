@@ -24,17 +24,17 @@ export function RotationQuickTable({
           transition={{ delay: 0.5, duration: 0.4 }}
         >
           <h2
-            className="text-xs sm:text-sm font-extrabold mb-3 sm:mb-4 tracking-wider uppercase"
-            style={{ color: "#999" }}
+            className="text-sm font-extrabold mb-3 sm:mb-4 tracking-wider uppercase"
+            style={{ color: "#666" }}
           >
             当番の順番 早見表
           </h2>
           <div className="overflow-x-auto -mx-1">
-            <table className="w-full text-xs sm:text-sm border-collapse" aria-label="ローテーション早見表">
+            <table className="w-full text-sm border-collapse" aria-label="ローテーション早見表">
               <thead>
                 <tr>
                   <th
-                    className="text-left py-2 sm:py-2.5 px-2 sm:px-3 font-extrabold text-xs sm:text-sm"
+                    className="text-left py-2 sm:py-2.5 px-2 sm:px-3 font-extrabold text-sm"
                     style={{ color: "#1a1a1a", borderBottom: "3px solid #1a1a1a" }}
                     scope="col"
                   >
@@ -45,7 +45,7 @@ export function RotationQuickTable({
                     return (
                       <th
                         key={rotationIndex}
-                        className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm whitespace-nowrap"
+                        className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-sm whitespace-nowrap"
                         style={{
                           color: isCurrent ? "#1a1a1a" : "#666",
                           borderBottom: "3px solid #1a1a1a",
@@ -65,7 +65,7 @@ export function RotationQuickTable({
                 {groups.map((group, groupIndex) => (
                   <tr key={group.id}>
                     <td
-                      className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-xs sm:text-sm whitespace-nowrap"
+                      className="py-2 sm:py-2.5 px-2 sm:px-3 font-bold text-sm whitespace-nowrap"
                       style={{
                         borderTop: groupIndex > 0 ? "2px solid #e5e5e5" : "none",
                         color: "#666",
@@ -74,7 +74,7 @@ export function RotationQuickTable({
                       <span className="text-sm sm:text-base" aria-hidden="true">
                         {group.emoji}
                       </span>{" "}
-                      <span className="text-[11px] sm:text-xs">
+                      <span className="text-xs sm:text-sm">
                         {group.tasks.join("・")}
                       </span>
                     </td>
@@ -85,7 +85,7 @@ export function RotationQuickTable({
                       return (
                         <td
                           key={rotationIndex}
-                          className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-xs sm:text-sm"
+                          className="text-center py-2 sm:py-2.5 px-1.5 sm:px-2 font-bold text-sm"
                           style={{
                             borderTop: groupIndex > 0 ? "2px solid #e5e5e5" : "none",
                             borderLeft: isCurrent ? "2.5px solid #FBBF24" : "none",

@@ -1,12 +1,13 @@
 import { useCallback, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, FileText, X } from "lucide-react";
+import { ChevronDown, FileText, Plus, X } from "lucide-react";
 import type { ScheduleTemplate } from "@/rotation/types";
 import { TEMPLATES } from "@/rotation/constants";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
 
+const CUSTOM_TEMPLATE = TEMPLATES[12]; // カスタム（空白）
+
 const TEMPLATE_SECTIONS = [
-  { label: "✨ カスタム", from: 12, to: 13, defaultOpen: true },
   { label: "🏢 事務室・オフィス", from: 0, to: 2, defaultOpen: false },
   { label: "🌷 幼稚園・保育園", from: 2, to: 5, defaultOpen: false },
   { label: "🏫 小中学校（クラス用）", from: 5, to: 8, defaultOpen: false },
@@ -79,10 +80,30 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
 
         {/* テンプレート一覧 */}
         <div className="p-5 overflow-y-auto flex flex-col gap-1">
-          <p className="text-xs font-bold mb-2" style={{ color: "#888" }}>
+          <p className="text-sm font-bold mb-2" style={{ color: "#888" }}>
             テンプレートを選択してください。後から自由に編集できます。
           </p>
 
+          {/* 新しくつくる（カスタム） */}
+          <button
+            onClick={() => onSelect(CUSTOM_TEMPLATE)}
+            className="brutal-border brutal-shadow-sm p-3 sm:p-4 w-full text-left transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] mb-2"
+            style={{ borderRadius: "12px", backgroundColor: "#FBBF24" }}
+          >
+            <div className="flex items-center gap-3">
+              <Plus className="w-6 h-6" style={{ color: "#1a1a1a" }} aria-hidden="true" />
+              <div className="min-w-0">
+                <div className="text-sm font-extrabold" style={{ color: "#1a1a1a" }}>
+                  新しくつくる
+                </div>
+                <div className="text-xs font-medium mt-0.5" style={{ color: "#7C5E00" }}>
+                  空白から自由に当番表を作成
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* テンプレートセクション */}
           {TEMPLATE_SECTIONS.map((section) => {
             const isOpen = openSections.has(section.label);
             const templates = TEMPLATES.slice(section.from, section.to);
@@ -94,7 +115,7 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
                   className="w-full flex items-center justify-between py-2 px-2 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <span
-                    className="text-xs font-extrabold tracking-wider"
+                    className="text-sm font-extrabold tracking-wider"
                     style={{ color: "#666" }}
                   >
                     {section.label}
@@ -128,7 +149,7 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
                                 <div className="text-sm font-extrabold" style={{ color: "#1a1a1a" }}>
                                   {template.name}
                                 </div>
-                                <div className="text-[10px] font-medium mt-0.5 truncate" style={{ color: "#888" }}>
+                                <div className="text-xs font-medium mt-0.5 truncate" style={{ color: "#888" }}>
                                   {template.groups.length}グループ ・ {template.members.length}人
                                   {template.groups.length > 0 && (
                                     <span> ・ {template.groups.map((g) => g.tasks.join("、")).join(" / ")}</span>

@@ -44,7 +44,7 @@ export function ScheduleTabs({
                 onDrop={(event) => onDrop(event, schedule.id)}
                 onDragEnd={onDragEnd}
                 onClick={() => onSelectSchedule(schedule.id)}
-                className={`brutal-border shrink-0 px-3 py-1.5 text-xs sm:text-sm font-bold transition-all duration-150 flex items-center gap-1.5 ${
+                className={`brutal-border shrink-0 px-3 py-1.5 text-sm font-bold transition-all duration-150 flex items-center gap-1.5 ${
                   schedule.id === activeScheduleId
                     ? "brutal-shadow-sm"
                     : "opacity-70 hover:opacity-100"
@@ -67,7 +67,7 @@ export function ScheduleTabs({
             ))}
             <button
               onClick={onAddSchedule}
-              className="brutal-border shrink-0 self-stretch px-2.5 text-xs sm:text-sm font-bold transition-all duration-150 hover:bg-gray-100 flex items-center"
+              className="brutal-border shrink-0 self-stretch px-2.5 text-sm font-bold transition-all duration-150 hover:bg-gray-100 flex items-center"
               style={{ borderRadius: "8px", backgroundColor: "#fff" }}
               aria-label="新しい当番表を追加"
             >

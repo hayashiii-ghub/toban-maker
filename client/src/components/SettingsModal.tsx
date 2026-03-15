@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown, Copy } from "lucide-react";
+import { X, Plus, Trash2, GripVertical, Save, Palette, ChevronDown, Copy, ChevronUp } from "lucide-react";
 import type { TaskGroup, Member } from "@/rotation/types";
 import { MEMBER_PRESETS, colorPresetFromHex } from "@/rotation/constants";
 import { computeAssignments, generateId, deepClone } from "@/rotation/utils";
@@ -145,6 +145,29 @@ export function SettingsModal({
     setDropMemberIdx(null);
   };
 
+  // --- タスク上下移動（タッチデバイス用） ---
+  const moveTask = (gIdx: number, tIdx: number, direction: -1 | 1) => {
+    setEditGroups((prev) => {
+      const next = deepClone(prev);
+      const tasks = next[gIdx].tasks;
+      const newIdx = tIdx + direction;
+      if (newIdx < 0 || newIdx >= tasks.length) return prev;
+      [tasks[tIdx], tasks[newIdx]] = [tasks[newIdx], tasks[tIdx]];
+      return next;
+    });
+  };
+
+  // --- メンバー上下移動（タッチデバイス用） ---
+  const moveMember = (mIdx: number, direction: -1 | 1) => {
+    setEditMembers((prev) => {
+      const newIdx = mIdx + direction;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[mIdx], next[newIdx]] = [next[newIdx], next[mIdx]];
+      return next;
+    });
+  };
+
   // --- 割り当てマップ（グループIDX → 担当メンバー） ---
   const assignmentMap = useMemo(() => {
     const validMembers = editMembers.filter((m) => m.name.trim() !== "");
@@ -176,6 +199,24 @@ export function SettingsModal({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [openPickerIdx]);
 
+  // --- 未保存変更の検知 ---
+  const isDirty = useMemo(() => {
+    if (editName !== scheduleName) return true;
+    if (JSON.stringify(editGroups) !== JSON.stringify(groups)) return true;
+    if (JSON.stringify(editMembers) !== JSON.stringify(members)) return true;
+    return false;
+  }, [editName, scheduleName, editGroups, groups, editMembers, members]);
+
+  const handleCloseWithCheck = useCallback(() => {
+    if (isDirty) {
+      if (window.confirm("変更が保存されていません。閉じますか？")) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  }, [isDirty, onClose]);
+
   const assignMemberToGroup = (gIdx: number, memberId: string) => {
     setEditMembers((prev) => {
       const targetIdx = prev.findIndex((m) => m.id === memberId);
@@ -187,12 +228,12 @@ export function SettingsModal({
     setOpenPickerIdx(null);
   };
 
-  const handleEscape = useCallback(() => onClose(), [onClose]);
+  const handleEscape = useCallback(() => handleCloseWithCheck(), [handleCloseWithCheck]);
   useEscapeKey(handleEscape);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
+      handleCloseWithCheck();
     }
   };
 
@@ -333,15 +374,15 @@ export function SettingsModal({
       >
         {/* モーダルヘッダー */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "3px solid #1a1a1a" }}>
-          <h2 id="settings-title" className="text-lg font-extrabold" style={{ color: "#1a1a1a" }}>設定</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors" aria-label="閉じる">
+          <h2 id="settings-title" className="text-lg font-extrabold" style={{ color: "#1a1a1a" }}>編集</h2>
+          <button onClick={handleCloseWithCheck} className="p-1 hover:bg-gray-100 rounded-lg transition-colors" aria-label="閉じる">
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* 当番表名 */}
         <div className="px-5 py-3" style={{ borderBottom: "3px solid #1a1a1a" }}>
-          <label htmlFor="schedule-name-input" className="text-xs font-bold mb-1.5 block" style={{ color: "#888" }}>当番表の名前</label>
+          <label htmlFor="schedule-name-input" className="text-sm font-bold mb-1.5 block" style={{ color: "#888" }}>当番表の名前</label>
           <input
             id="schedule-name-input"
             type="text"
@@ -387,7 +428,7 @@ export function SettingsModal({
 
         {/* バリデーションエラー */}
         {validationError && (
-          <div className="mx-5 mt-3 px-3 py-2 text-xs font-bold rounded-lg" style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }} role="alert">
+          <div className="mx-5 mt-3 px-3 py-2 text-sm font-bold rounded-lg" style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }} role="alert">
             {validationError}
           </div>
         )}
@@ -427,7 +468,7 @@ export function SettingsModal({
                             <button
                               type="button"
                               onClick={() => setOpenPickerIdx(isPickerOpen ? null : gIdx)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold cursor-pointer transition-all hover:shadow-md"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold cursor-pointer transition-all hover:shadow-md"
                               style={{ backgroundColor: assignedMember.bgColor, color: assignedMember.color }}
                             >
                               <span
@@ -443,7 +484,7 @@ export function SettingsModal({
                             <button
                               type="button"
                               onClick={() => setOpenPickerIdx(isPickerOpen ? null : gIdx)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold border-2 border-dashed cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border-2 border-dashed cursor-pointer"
                               style={{ borderColor: "#ccc", color: "#999" }}
                             >
                               担当者を選択
@@ -484,7 +525,7 @@ export function SettingsModal({
                                       {m.name.charAt(0)}
                                     </span>
                                     {m.name}
-                                    {isCurrent && <span className="ml-auto text-[10px]">✓</span>}
+                                    {isCurrent && <span className="ml-auto text-xs">✓</span>}
                                   </button>
                                 );
                               })}
@@ -530,8 +571,30 @@ export function SettingsModal({
                                 style={{ backgroundColor: "#FBBF24" }}
                               />
                             )}
+                            <div className="flex flex-col shrink-0 touch-device-only sm:hidden">
+                              <button
+                                type="button"
+                                onClick={() => moveTask(gIdx, tIdx, -1)}
+                                disabled={tIdx === 0}
+                                className="p-0.5 disabled:opacity-20"
+                                style={{ color: "#999" }}
+                                aria-label="上に移動"
+                              >
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveTask(gIdx, tIdx, 1)}
+                                disabled={tIdx === group.tasks.length - 1}
+                                className="p-0.5 disabled:opacity-20"
+                                style={{ color: "#999" }}
+                                aria-label="下に移動"
+                              >
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                             <GripVertical
-                              className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing"
+                              className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing hidden sm:block"
                               style={{ color: "#bbb" }}
                               aria-hidden="true"
                             />
@@ -557,7 +620,7 @@ export function SettingsModal({
                       })}
                       <button
                         onClick={() => addTask(gIdx)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold self-start hover:bg-gray-100 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold self-start hover:bg-gray-100 rounded-lg transition-colors"
                         style={{ color: "#666" }}
                       >
                         <Plus className="w-3.5 h-3.5" aria-hidden="true" /> タスクを追加
@@ -599,8 +662,30 @@ export function SettingsModal({
                           onDrop={(e) => handleMemberDrop(e, mIdx)}
                           onDragEnd={handleMemberDragEnd}
                         >
+                          <div className="flex flex-col shrink-0 sm:hidden">
+                            <button
+                              type="button"
+                              onClick={() => moveMember(mIdx, -1)}
+                              disabled={mIdx === 0}
+                              className="p-0.5 disabled:opacity-20"
+                              style={{ color: "#999" }}
+                              aria-label="上に移動"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveMember(mIdx, 1)}
+                              disabled={mIdx === editMembers.length - 1}
+                              className="p-0.5 disabled:opacity-20"
+                              style={{ color: "#999" }}
+                              aria-label="下に移動"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                           <GripVertical
-                            className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing"
+                            className="w-4 h-4 shrink-0 cursor-grab active:cursor-grabbing hidden sm:block"
                             style={{ color: "#bbb" }}
                             aria-hidden="true"
                           />
@@ -671,14 +756,14 @@ export function SettingsModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={addMember}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 rounded-lg transition-colors"
                       style={{ color: "#666" }}
                     >
                       <Plus className="w-3.5 h-3.5" aria-hidden="true" /> 担当者を追加
                     </button>
                     <button
                       onClick={() => setBulkMode((v) => !v)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold hover:bg-gray-100 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold hover:bg-gray-100 rounded-lg transition-colors"
                       style={{ color: bulkMode ? "#1a1a1a" : "#666" }}
                     >
                       📋 一括追加

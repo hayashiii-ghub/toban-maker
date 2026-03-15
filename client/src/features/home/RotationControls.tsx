@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Cloud, Loader2, Printer, RotateCcw, RotateCw, Settings } from "lucide-react";
+import { Cloud, Loader2, Pencil, Printer, RotateCcw, RotateCw } from "lucide-react";
 
 interface RotationControlsProps {
   rotation: number;
@@ -43,10 +43,10 @@ export function RotationControls({
               {rotation}
             </div>
             <div className="text-center sm:text-left">
-              <div className="text-xs sm:text-sm font-bold" style={{ color: "#1a1a1a" }}>
+              <div className="text-sm font-bold" style={{ color: "#1a1a1a" }}>
                 現在の順番
               </div>
-              <div className="text-[10px] sm:text-xs font-medium" style={{ color: "#7C5E00" }}>
+              <div className="text-xs sm:text-sm font-medium" style={{ color: "#7C5E00" }}>
                 {rotationLabel}
               </div>
             </div>
@@ -56,7 +56,7 @@ export function RotationControls({
             <button
               onClick={onRotateBackward}
               disabled={isAnimating}
-              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
               style={{ backgroundColor: "#fff", borderRadius: "8px" }}
               aria-label="ローテーションを1つ戻す"
             >
@@ -65,7 +65,7 @@ export function RotationControls({
             <button
               onClick={onRotateForward}
               disabled={isAnimating}
-              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
               style={{ backgroundColor: "#fff", borderRadius: "8px" }}
               aria-label="ローテーションを1つ進める"
             >
@@ -73,7 +73,7 @@ export function RotationControls({
             </button>
             <button
               onClick={onPrint}
-              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px]"
+              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px]"
               style={{ backgroundColor: "#fff", borderRadius: "8px" }}
               aria-label="当番表を印刷する"
             >
@@ -83,7 +83,7 @@ export function RotationControls({
             <button
               onClick={onShare}
               disabled={isSharing}
-              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
               style={{ backgroundColor: "#fff", borderRadius: "8px" }}
               aria-label="共有する"
             >
@@ -96,11 +96,11 @@ export function RotationControls({
             </button>
             <button
               onClick={onOpenSettings}
-              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-xs sm:text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px]"
+              className="brutal-border brutal-shadow-sm flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 font-bold text-sm transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_#1a1a1a] active:translate-x-[1px] active:translate-y-[1px]"
               style={{ backgroundColor: "#fff", borderRadius: "8px" }}
-              aria-label="当番表の設定を開く"
+              aria-label="当番表を編集する"
             >
-              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" /> 設定
+              <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" /> 編集
             </button>
           </div>
         </motion.div>
