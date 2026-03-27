@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 86 232 318">
+  <!-- Clipboard body -->
+  <rect x="148" y="120" width="216" height="276" rx="24" fill="#fff" stroke="#7A4850" stroke-width="9"/>
+
+  <!-- Clipboard clip -->
+  <rect x="196" y="96" width="120" height="56" rx="16" fill="#F2B5C0" stroke="#7A4850" stroke-width="7"/>
+  <circle cx="256" cy="118" r="12" fill="#fff"/>
+
+  <!-- Checklist row 1 - lightest pink -->
+  <circle cx="196" cy="210" r="16" fill="#F2A0B0"/>
+  <polyline points="189,210 194,216 204,204" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="224" y="202" width="104" height="16" rx="8" fill="#F4C8D2"/>
+
+  <!-- Checklist row 2 - medium pink -->
+  <circle cx="196" cy="268" r="16" fill="#E47080"/>
+  <polyline points="189,268 194,274 204,262" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="224" y="260" width="104" height="16" rx="8" fill="#F2A0B0"/>
+
+  <!-- Checklist row 3 - deep pink -->
+  <circle cx="196" cy="326" r="16" fill="#C85060"/>
+  <polyline points="189,326 194,332 204,320" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="224" y="318" width="104" height="16" rx="8" fill="#E47080"/>
+</svg>

@@ -1,0 +1,101 @@
+.rotation-print-only {
+  display: none;
+}
+
+@page {
+  margin: 8mm;
+}
+
+@media print {
+  html,
+  body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Hide toasts during print */
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  .rotation-no-print {
+    display: none !important;
+  }
+
+  .rotation-print-only {
+    display: block !important;
+  }
+
+  .rotation-print-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: var(--dt-border-width, 2px) solid var(--dt-border-color, #333) !important;
+  }
+
+  .rotation-print-header {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .rotation-page {
+    min-height: auto !important;
+    width: 100%;
+    padding: 4mm 0 !important;
+    box-sizing: border-box;
+  }
+
+  .rotation-print-card-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    gap: 12px !important;
+    font-size: 13px !important;
+  }
+
+  .rotation-print-card [class*="p-2"],
+  .rotation-print-card [class*="p-3"] {
+    padding: 6px !important;
+  }
+
+  /* Unhide tab wrappers for print — visibility controlled by data-print-mode rules below */
+  .rotation-view-tab.hidden {
+    display: block !important;
+  }
+
+  /* Print mode: cards only - hide table & calendar */
+  [data-print-mode="cards"] .rotation-print-table-section,
+  [data-print-mode="cards"] .rotation-print-calendar-section {
+    display: none !important;
+  }
+
+  /* Print mode: table only - hide cards & calendar */
+  [data-print-mode="table"] .rotation-print-card-section,
+  [data-print-mode="table"] .rotation-print-calendar-section {
+    display: none !important;
+  }
+
+  /* Print mode: calendar only - hide cards & table */
+  [data-print-mode="calendar"] .rotation-print-card-section,
+  [data-print-mode="calendar"] .rotation-print-table-section {
+    display: none !important;
+  }
+
+  /* Allow content to flow across pages */
+  .rotation-print-card-section,
+  .rotation-print-table-section,
+  .rotation-print-calendar-section {
+    page-break-before: auto;
+    page-break-after: auto;
+  }
+
+  /* Calendar print: minimum font size guarantee */
+  .rotation-print-calendar-section .grid-cols-7 div {
+    font-size: max(11px, inherit) !important;
+  }
+
+}

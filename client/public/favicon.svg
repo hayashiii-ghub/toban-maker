@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 22 68 88">
+  <!-- Clipboard body -->
+  <rect x="34" y="34" width="60" height="72" rx="8" fill="#fff" stroke="#7A4850" stroke-width="3.5"/>
+
+  <!-- Clipboard clip -->
+  <rect x="48" y="26" width="32" height="16" rx="5" fill="#F2B5C0" stroke="#7A4850" stroke-width="2.5"/>
+  <circle cx="64" cy="32" r="3.5" fill="#fff"/>
+
+  <!-- Checklist row 1 - lightest pink -->
+  <circle cx="50" cy="56" r="5.5" fill="#F2A0B0"/>
+  <rect x="60" y="53" width="26" height="6" rx="3" fill="#F4C8D2"/>
+
+  <!-- Checklist row 2 - medium pink -->
+  <circle cx="50" cy="72" r="5.5" fill="#E47080"/>
+  <rect x="60" y="69" width="26" height="6" rx="3" fill="#F2A0B0"/>
+
+  <!-- Checklist row 3 - deep pink -->
+  <circle cx="50" cy="88" r="5.5" fill="#C85060"/>
+  <rect x="60" y="85" width="26" height="6" rx="3" fill="#E47080"/>
+</svg>

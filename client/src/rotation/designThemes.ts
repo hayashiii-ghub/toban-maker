@@ -1,0 +1,504 @@
+export interface DesignThemeColors {
+  pageBg: string;
+  cardBg: string;
+  controlBarBg: string;
+  controlBarText: string;
+  controlBarSubtext: string;
+  buttonBg: string;
+  tabActiveBg: string;
+  tabActiveText: string;
+  tabInactiveBg: string;
+  tabInactiveText: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  borderColor: string;
+  tableBorderStrong: string;
+  tableBorderLight: string;
+  focusRing: string;
+  currentHighlight: string;
+}
+
+export interface DesignThemeBorders {
+  width: string;
+  radius: string;
+  radiusSm: string;
+}
+
+export interface DesignThemeShadows {
+  card: string;
+  cardSm: string;
+  cardHover: string;
+  cardLg: string;
+}
+
+export interface DesignThemeTypography {
+  fontFamily: string;
+  fontWeightNormal: string;
+  fontWeightBold: string;
+  fontWeightExtra: string;
+}
+
+export interface DesignThemeEffects {
+  hoverTranslate: string;
+}
+
+export interface DesignTheme {
+  id: string;
+  name: string;
+  description: string;
+  preview: {
+    primaryColor: string;
+    secondaryColor: string;
+    bgColor: string;
+  };
+  colors: DesignThemeColors;
+  borders: DesignThemeBorders;
+  shadows: DesignThemeShadows;
+  typography: DesignThemeTypography;
+  effects: DesignThemeEffects;
+}
+
+// ── テーマ定義 ──
+
+const sunflower: DesignTheme = {
+  id: "sunflower",
+  name: "ひまわり",
+  description: "明るく温かいひまわり色",
+  preview: { primaryColor: "#F0A830", secondaryColor: "#FFF4D8", bgColor: "#FFFCF0" },
+  colors: {
+    pageBg: "#FFFCF0",
+    cardBg: "#ffffff",
+    controlBarBg: "#F0A830",
+    controlBarText: "#3D2800",
+    controlBarSubtext: "#6B4E10",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#F0A830",
+    tabActiveText: "#3D2800",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#908060",
+    text: "#2C2410",
+    textSecondary: "#6B5E40",
+    textMuted: "#908060",
+    borderColor: "#D4B870",
+    tableBorderStrong: "#C0A858",
+    tableBorderLight: "#ECE0C0",
+    focusRing: "#F0A830",
+    currentHighlight: "#F5D06E",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "12px",
+    radiusSm: "8px",
+  },
+  shadows: {
+    card: "0 2px 8px rgba(212, 168, 48, 0.12)",
+    cardSm: "0 1px 4px rgba(212, 168, 48, 0.08)",
+    cardHover: "0 4px 16px rgba(212, 168, 48, 0.2)",
+    cardLg: "0 4px 12px rgba(212, 168, 48, 0.15)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const crayon: DesignTheme = {
+  id: "crayon",
+  name: "クレヨン",
+  description: "クレヨンで描いたようなデザイン",
+  preview: { primaryColor: "#E86830", secondaryColor: "#FFE4CC", bgColor: "#FFF6EC" },
+  colors: {
+    pageBg: "#FFF6EC",
+    cardBg: "#FFFEFA",
+    controlBarBg: "#E86830",
+    controlBarText: "#ffffff",
+    controlBarSubtext: "#FFE4D0",
+    buttonBg: "#FFFEFA",
+    tabActiveBg: "#E86830",
+    tabActiveText: "#ffffff",
+    tabInactiveBg: "#FFFEFA",
+    tabInactiveText: "#907868",
+    text: "#3A2518",
+    textSecondary: "#6B5040",
+    textMuted: "#907868",
+    borderColor: "#5C3A1E",
+    tableBorderStrong: "#5C3A1E",
+    tableBorderLight: "#F0D8C4",
+    focusRing: "#E86830",
+    currentHighlight: "#FFB870",
+  },
+  borders: {
+    width: "3px",
+    radius: "20px",
+    radiusSm: "12px",
+  },
+  shadows: {
+    card: "3px 3px 0px #5C3A1E",
+    cardSm: "2px 2px 0px #5C3A1E",
+    cardHover: "4px 4px 0px #5C3A1E",
+    cardLg: "3px 3px 0px #5C3A1E",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "500",
+    fontWeightBold: "700",
+    fontWeightExtra: "900",
+  },
+  effects: {
+    hoverTranslate: "-1px",
+  },
+};
+
+const lavender: DesignTheme = {
+  id: "lavender",
+  name: "ラベンダー",
+  description: "上品なラベンダーカラー",
+  preview: { primaryColor: "#9B85CC", secondaryColor: "#EDE6F8", bgColor: "#F8F5FC" },
+  colors: {
+    pageBg: "#F8F5FC",
+    cardBg: "#ffffff",
+    controlBarBg: "#9B85CC",
+    controlBarText: "#2A1E48",
+    controlBarSubtext: "#4A3870",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#9B85CC",
+    tabActiveText: "#2A1E48",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#887898",
+    text: "#2A2035",
+    textSecondary: "#5A4E6B",
+    textMuted: "#887898",
+    borderColor: "#C8B8E0",
+    tableBorderStrong: "#A898C8",
+    tableBorderLight: "#E0D8EE",
+    focusRing: "#9B85CC",
+    currentHighlight: "#C8B5F0",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "16px",
+    radiusSm: "10px",
+  },
+  shadows: {
+    card: "0 2px 10px rgba(155, 133, 204, 0.14)",
+    cardSm: "0 1px 5px rgba(155, 133, 204, 0.10)",
+    cardHover: "0 5px 20px rgba(155, 133, 204, 0.24)",
+    cardLg: "0 4px 14px rgba(155, 133, 204, 0.17)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "600",
+    fontWeightExtra: "700",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const whiteboard: DesignTheme = {
+  id: "whiteboard",
+  name: "ホワイトボード",
+  description: "ホワイトボード風のすっきりデザイン",
+  preview: { primaryColor: "#666666", secondaryColor: "#f5f5f5", bgColor: "#ffffff" },
+  colors: {
+    pageBg: "#ffffff",
+    cardBg: "#ffffff",
+    controlBarBg: "#f0f0f0",
+    controlBarText: "#333333",
+    controlBarSubtext: "#555555",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#333333",
+    tabActiveText: "#ffffff",
+    tabInactiveBg: "#f5f5f5",
+    tabInactiveText: "#777777",
+    text: "#1a1a1a",
+    textSecondary: "#666666",
+    textMuted: "#888888",
+    borderColor: "#b8b8b8",
+    tableBorderStrong: "#888888",
+    tableBorderLight: "#d8d8d8",
+    focusRing: "#666666",
+    currentHighlight: "#e0e0e0",
+  },
+  borders: {
+    width: "1px",
+    radius: "8px",
+    radiusSm: "4px",
+  },
+  shadows: {
+    card: "0 1px 3px rgba(0, 0, 0, 0.08)",
+    cardSm: "0 1px 2px rgba(0, 0, 0, 0.06)",
+    cardHover: "0 2px 8px rgba(0, 0, 0, 0.12)",
+    cardLg: "0 2px 6px rgba(0, 0, 0, 0.1)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const nature: DesignTheme = {
+  id: "nature",
+  name: "わかば",
+  description: "フレッシュな若葉のデザイン",
+  preview: { primaryColor: "#6B9E6B", secondaryColor: "#E8F0E4", bgColor: "#F5F7F2" },
+  colors: {
+    pageBg: "#F5F7F2",
+    cardBg: "#ffffff",
+    controlBarBg: "#6B9E6B",
+    controlBarText: "#ffffff",
+    controlBarSubtext: "#E4F2E4",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#6B9E6B",
+    tabActiveText: "#ffffff",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#778877",
+    text: "#2D3B2D",
+    textSecondary: "#5A6B5A",
+    textMuted: "#7A8E7A",
+    borderColor: "#C2D4B8",
+    tableBorderStrong: "#9AB88E",
+    tableBorderLight: "#D8E6D0",
+    focusRing: "#6B9E6B",
+    currentHighlight: "#A8D5A8",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "10px",
+    radiusSm: "6px",
+  },
+  shadows: {
+    card: "0 2px 8px rgba(45, 91, 39, 0.1)",
+    cardSm: "0 1px 4px rgba(45, 91, 39, 0.08)",
+    cardHover: "0 4px 16px rgba(45, 91, 39, 0.16)",
+    cardLg: "0 4px 12px rgba(45, 91, 39, 0.12)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const sakura: DesignTheme = {
+  id: "sakura",
+  name: "さくら",
+  description: "やさしい桜色のデザイン",
+  preview: { primaryColor: "#F9A8B8", secondaryColor: "#FFF0F3", bgColor: "#FFF5F7" },
+  colors: {
+    pageBg: "#FFF5F7",
+    cardBg: "#ffffff",
+    controlBarBg: "#F9A8B8",
+    controlBarText: "#5C1A2A",
+    controlBarSubtext: "#8E3852",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#F9A8B8",
+    tabActiveText: "#5C1A2A",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#887080",
+    text: "#3B2C30",
+    textSecondary: "#7A5A62",
+    textMuted: "#9A808A",
+    borderColor: "#F0D0D8",
+    tableBorderStrong: "#E8B0BC",
+    tableBorderLight: "#F5E0E5",
+    focusRing: "#F9A8B8",
+    currentHighlight: "#FBCFE8",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "16px",
+    radiusSm: "10px",
+  },
+  shadows: {
+    card: "0 2px 10px rgba(249, 168, 184, 0.18)",
+    cardSm: "0 1px 5px rgba(249, 168, 184, 0.12)",
+    cardHover: "0 5px 20px rgba(249, 168, 184, 0.28)",
+    cardLg: "0 4px 14px rgba(249, 168, 184, 0.2)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "600",
+    fontWeightExtra: "700",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const nightsky: DesignTheme = {
+  id: "nightsky",
+  name: "よぞら",
+  description: "落ち着いた夜空のデザイン",
+  preview: { primaryColor: "#2C4466", secondaryColor: "#DEE4EE", bgColor: "#F0F2F6" },
+  colors: {
+    pageBg: "#F0F2F6",
+    cardBg: "#ffffff",
+    controlBarBg: "#2C4466",
+    controlBarText: "#ffffff",
+    controlBarSubtext: "#B8C8DA",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#2C4466",
+    tabActiveText: "#ffffff",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#7888A0",
+    text: "#1A2840",
+    textSecondary: "#485870",
+    textMuted: "#7888A0",
+    borderColor: "#A0B0C8",
+    tableBorderStrong: "#8098B0",
+    tableBorderLight: "#D0D8E4",
+    focusRing: "#2C4466",
+    currentHighlight: "#B0C8E0",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "10px",
+    radiusSm: "6px",
+  },
+  shadows: {
+    card: "0 2px 8px rgba(44, 68, 102, 0.1)",
+    cardSm: "0 1px 4px rgba(44, 68, 102, 0.07)",
+    cardHover: "0 4px 16px rgba(44, 68, 102, 0.18)",
+    cardLg: "0 4px 12px rgba(44, 68, 102, 0.13)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const chalkboard: DesignTheme = {
+  id: "chalkboard",
+  name: "こくばん",
+  description: "教室の黒板をイメージ",
+  preview: { primaryColor: "#2E6B4F", secondaryColor: "#EDE8DF", bgColor: "#F5F0E8" },
+  colors: {
+    pageBg: "#F5F0E8",
+    cardBg: "#ffffff",
+    controlBarBg: "#2E6B4F",
+    controlBarText: "#ffffff",
+    controlBarSubtext: "#D0E8DC",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#2E6B4F",
+    tabActiveText: "#ffffff",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#708878",
+    text: "#2A3A30",
+    textSecondary: "#4A6050",
+    textMuted: "#708878",
+    borderColor: "#C2CCBA",
+    tableBorderStrong: "#8EA88A",
+    tableBorderLight: "#D8E0D2",
+    focusRing: "#2E6B4F",
+    currentHighlight: "#A8D8B8",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "6px",
+    radiusSm: "4px",
+  },
+  shadows: {
+    card: "0 2px 8px rgba(46, 107, 79, 0.1)",
+    cardSm: "0 1px 4px rgba(46, 107, 79, 0.08)",
+    cardHover: "0 4px 16px rgba(46, 107, 79, 0.18)",
+    cardLg: "0 4px 12px rgba(46, 107, 79, 0.12)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+const ocean: DesignTheme = {
+  id: "ocean",
+  name: "うみ",
+  description: "さわやかな海のデザイン",
+  preview: { primaryColor: "#50B0E0", secondaryColor: "#E0F2FC", bgColor: "#F0F8FE" },
+  colors: {
+    pageBg: "#F0F8FE",
+    cardBg: "#ffffff",
+    controlBarBg: "#50B0E0",
+    controlBarText: "#0A3048",
+    controlBarSubtext: "#1E5070",
+    buttonBg: "#ffffff",
+    tabActiveBg: "#50B0E0",
+    tabActiveText: "#0A3048",
+    tabInactiveBg: "#ffffff",
+    tabInactiveText: "#6890A8",
+    text: "#1A3050",
+    textSecondary: "#3A6888",
+    textMuted: "#6890A8",
+    borderColor: "#B0D8F0",
+    tableBorderStrong: "#80B8D8",
+    tableBorderLight: "#D0E8F6",
+    focusRing: "#50B0E0",
+    currentHighlight: "#A0D8F4",
+  },
+  borders: {
+    width: "1.5px",
+    radius: "12px",
+    radiusSm: "8px",
+  },
+  shadows: {
+    card: "0 2px 8px rgba(80, 176, 224, 0.12)",
+    cardSm: "0 1px 4px rgba(80, 176, 224, 0.08)",
+    cardHover: "0 4px 16px rgba(80, 176, 224, 0.2)",
+    cardLg: "0 4px 12px rgba(80, 176, 224, 0.15)",
+  },
+  typography: {
+    fontFamily: "'M PLUS Rounded 1c', sans-serif",
+    fontWeightNormal: "400",
+    fontWeightBold: "700",
+    fontWeightExtra: "800",
+  },
+  effects: {
+    hoverTranslate: "0px",
+  },
+};
+
+export const DEFAULT_THEME_ID = "whiteboard";
+
+export const DESIGN_THEMES: DesignTheme[] = [
+  whiteboard,
+  chalkboard,
+  crayon,
+  sunflower,
+  lavender,
+  sakura,
+  nature,
+  ocean,
+  nightsky,
+];
+
+export function getThemeById(id: string | undefined): DesignTheme {
+  if (!id) return whiteboard;
+  return DESIGN_THEMES.find((theme) => theme.id === id) ?? whiteboard;
+}
