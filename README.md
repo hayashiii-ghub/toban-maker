@@ -28,6 +28,7 @@
 | バックエンド | Hono (Cloudflare Workers) | 軽量・Web標準API準拠・Cloudflare Workersにネイティブ対応 |
 | データベース | Cloudflare D1 + Drizzle ORM | SQLite互換でサーバーレス・型安全なクエリ |
 | データ永続化 | localStorage + D1 | ローカルが主データストア、D1はクラウド共有・バックアップ層 |
+| テスト | Vitest + Testing Library | 高速な実行・React コンポーネントのDOM テストに対応 |
 | パッケージマネージャ | pnpm | 高速・ディスク効率の良い依存管理 |
 
 ## 構成
