@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { AssignmentMode, Member, TaskGroup } from "@/rotation/types";
+import type { Member, TaskGroup } from "@/rotation/types";
 import { MEMBER_PRESETS } from "@/rotation/constants";
 import { generateId, deepClone } from "@/rotation/utils";
 

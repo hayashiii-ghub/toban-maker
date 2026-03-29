@@ -5,6 +5,7 @@ import type { AssignmentMode, TaskGroup, Member, RotationConfig } from "@/rotati
 import { deepClone, generateId } from "@/rotation/utils";
 import { MEMBER_PRESETS } from "@/rotation/constants";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { TaskGroupEditor } from "./settings/TaskGroupEditor";
 import { AccordionSection } from "./settings/AccordionSection";
 import { DesignThemePicker } from "./settings/DesignThemePicker";
@@ -175,6 +176,7 @@ export function SettingsModal({
   }, [isDirty, onClose, revertThemePreview]);
 
   useEscapeKey(useCallback(() => handleCloseWithCheck(), [handleCloseWithCheck]));
+  useFocusTrap(modalRef, true);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {

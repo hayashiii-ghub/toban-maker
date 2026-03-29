@@ -10,7 +10,6 @@ interface AssignmentsGridProps {
   assignments: Array<{ group: TaskGroup; member: Member }>;
   direction: "forward" | "backward";
   rotation: number;
-  groupCount: number;
   scheduleId: string;
   stagger?: boolean;
   assignmentMode?: AssignmentMode;
@@ -20,7 +19,6 @@ export function AssignmentsGrid({
   assignments,
   direction,
   rotation,
-  groupCount,
   scheduleId,
   stagger = true,
   assignmentMode,

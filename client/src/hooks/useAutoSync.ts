@@ -56,6 +56,7 @@ export function useAutoSync(
     const hasMembers = s.members.some(m => m.name.trim() !== "");
     if (!hasMembers) return s;
 
+    // eslint-disable-next-line prefer-const -- assigned after IIFE captures the closure
     let currentBackupPromise!: Promise<Schedule | undefined>;
     const backupPromise = (async () => {
       backupInFlightRef.current = true;

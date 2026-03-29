@@ -185,7 +185,6 @@ export default function SharedScheduleView() {
           assignments={assignments}
           direction="forward"
           rotation={effectiveRotation}
-          groupCount={schedule.groups.length}
           scheduleId={schedule.slug}
           stagger={false}
           assignmentMode={schedule.assignmentMode}
