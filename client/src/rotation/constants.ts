@@ -97,9 +97,9 @@ export const TEMPLATES: ScheduleTemplate[] = [
     designThemeId: "crayon",
     assignmentMode: "task",
     groups: [
-      { id: "g1", tasks: ["ブレスチェック", "体位確認"], emoji: "🍼", memberIds: ["m1", "m2", "m3", "m4"] },
-      { id: "g2", tasks: ["ブレスチェック", "体位確認"], emoji: "🧸", memberIds: ["m1", "m2", "m3", "m4"] },
-      { id: "g3", tasks: ["ブレスチェック", "室温・湿度記録"], emoji: "🐣", memberIds: ["m1", "m2", "m3", "m4"] },
+      { id: "g1", tasks: ["ブレスチェック（0歳児）", "体位確認"], emoji: "🍼", memberIds: ["m1", "m2", "m3", "m4"] },
+      { id: "g2", tasks: ["ブレスチェック（1歳児）", "体位確認"], emoji: "🧸", memberIds: ["m1", "m2", "m3", "m4"] },
+      { id: "g3", tasks: ["ブレスチェック（2歳児）", "室温・湿度記録"], emoji: "🐣", memberIds: ["m1", "m2", "m3", "m4"] },
     ],
     members: [
       { id: "m1", name: "佐藤先生", color: "#EF4444", bgColor: "#FEE2E2", textColor: "#7F1D1D" },
@@ -280,8 +280,8 @@ export const TEMPLATES: ScheduleTemplate[] = [
     emoji: "🏊",
     designThemeId: "ocean",
     groups: [
-      { id: "g1", tasks: ["プールサイド監視", "入水人数チェック"], emoji: "🌅" },
-      { id: "g2", tasks: ["プールサイド監視", "入水人数チェック"], emoji: "🌇" },
+      { id: "g1", tasks: ["プールサイド監視（午前）", "入水人数チェック"], emoji: "🌅" },
+      { id: "g2", tasks: ["プールサイド監視（午後）", "入水人数チェック"], emoji: "🌇" },
       { id: "g3", tasks: ["救護・AED準備", "水温・気温記録"], emoji: "🩹" },
     ],
     members: [
@@ -337,8 +337,8 @@ export const TEMPLATES: ScheduleTemplate[] = [
     designThemeId: "ocean",
     assignmentMode: "task",
     groups: [
-      { id: "g1", tasks: ["浴室内介助", "脱衣・着衣介助", "誘導・見守り"], emoji: "🌅", memberIds: ["m1", "m2", "m3", "m4", "m5"] },
-      { id: "g2", tasks: ["浴室内介助", "脱衣・着衣介助", "誘導・見守り"], emoji: "🌇", memberIds: ["m1", "m2", "m3", "m4", "m5"] },
+      { id: "g1", tasks: ["浴室内介助（午前）", "脱衣・着衣介助", "誘導・見守り"], emoji: "🌅", memberIds: ["m1", "m2", "m3", "m4", "m5"] },
+      { id: "g2", tasks: ["浴室内介助（午後）", "脱衣・着衣介助", "誘導・見守り"], emoji: "🌇", memberIds: ["m1", "m2", "m3", "m4", "m5"] },
     ],
     members: [
       { id: "m1", name: "高橋", color: "#EF4444", bgColor: "#FEE2E2", textColor: "#7F1D1D" },
@@ -477,7 +477,7 @@ export const TEMPLATES: ScheduleTemplate[] = [
   },
   {
     name: "教会・寺院 奉仕当番",
-    emoji: "⛩️",
+    emoji: "🙏",
     designThemeId: "lavender",
     groups: [
       { id: "g1", tasks: ["本堂・礼拝堂清掃", "境内清掃・落ち葉掃き"], emoji: "🧹" },
