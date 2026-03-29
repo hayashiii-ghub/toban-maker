@@ -16,13 +16,13 @@ export function RotationQuickTable({
   rotation,
   assignmentMode,
 }: RotationQuickTableProps) {
-  const activeMembers = members.filter(m => !m.skipped);
+  const activeMembers = useMemo(() => members.filter(m => !m.skipped), [members]);
 
   const allColumnAssignments = useMemo(() => {
     return activeMembers.map((_, rotationIndex) =>
       computeAssignments(groups, members, rotationIndex, assignmentMode)
     );
-  }, [groups, members, activeMembers.length, assignmentMode]);
+  }, [groups, members, activeMembers, assignmentMode]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);

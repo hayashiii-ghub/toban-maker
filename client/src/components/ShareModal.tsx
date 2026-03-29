@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Copy, Check, AlertTriangle } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { encodeShareTransferData } from "@/lib/shareTransfer";
 import { toast } from "sonner";
 
@@ -67,6 +68,7 @@ export function ShareModal({ slug, editToken, scheduleName, onClose }: Props) {
   };
 
   useEscapeKey(onClose);
+  useFocusTrap(modalRef, true);
 
   return (
     <motion.div

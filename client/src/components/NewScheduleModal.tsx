@@ -4,6 +4,7 @@ import { ChevronDown, FileText, Plus, X } from "lucide-react";
 import type { ScheduleTemplate } from "@/rotation/types";
 import { TEMPLATES } from "@/rotation/constants";
 import { useEscapeKey } from "@/hooks/useEscapeKey";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 const CUSTOM_TEMPLATE = TEMPLATES[TEMPLATES.length - 1]; // カスタム（空白）— 常に最後
 
@@ -34,6 +35,7 @@ export function NewScheduleModal({ onSelect, onClose }: Props) {
 
   const handleEscape = useCallback(() => onClose(), [onClose]);
   useEscapeKey(handleEscape);
+  useFocusTrap(modalRef, true);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {

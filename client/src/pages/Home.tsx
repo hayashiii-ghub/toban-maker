@@ -51,8 +51,8 @@ export default function Home() {
   });
   const animationTimeoutRef = useRef<number | null>(null);
 
-  const groups = activeSchedule?.groups ?? [];
-  const members = activeSchedule?.members ?? [];
+  const groups = useMemo(() => activeSchedule?.groups ?? [], [activeSchedule]);
+  const members = useMemo(() => activeSchedule?.members ?? [], [activeSchedule]);
   const effectiveRotation = useMemo(
     () => (activeSchedule ? getEffectiveRotation(activeSchedule) : 0),
     [activeSchedule],
@@ -65,6 +65,7 @@ export default function Home() {
 
   useBodyScrollLock(showSettings || showNewSchedule || showShare || confirmDelete !== null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- saveState is stable from useScheduleManager
   useEffect(() => { saveState(state); }, [state]);
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function Home() {
       setShowNewSchedule(true);
     }
     window.history.replaceState({}, "", window.location.pathname);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only: reads URL params once
   }, []);
 
   useEffect(() => {
@@ -244,7 +246,7 @@ export default function Home() {
       {viewTab === "cards" && (
         <AssignmentsGrid
           assignments={assignments} direction={direction} rotation={effectiveRotation}
-          groupCount={groups.length} scheduleId={activeSchedule.id} stagger={isAnimating}
+          scheduleId={activeSchedule.id} stagger={isAnimating}
           assignmentMode={activeSchedule.assignmentMode}
         />
       )}

@@ -8,7 +8,7 @@ import {
   TEMPLATE_CATEGORIES,
 } from "@shared/seo-templates";
 import { TEMPLATES } from "@/rotation/constants";
-import type { ScheduleTemplate } from "@/rotation/types";
+
 import NotFound from "./NotFound";
 
 export default function TemplateDetailPage() {
