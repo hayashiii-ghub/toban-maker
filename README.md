@@ -2,7 +2,7 @@
 
 掃除当番・給食当番・日直などのローテーション表を作成・印刷・共有できる無料Webアプリ。
 
-**URL**: toban-maker.hayashigoto.workers.dev
+**URL**: https://toban.app
 
 ## 主な機能
 

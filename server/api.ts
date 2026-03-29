@@ -8,9 +8,9 @@ type Env = { Bindings: { DB: D1Database; ENVIRONMENT?: string } };
 
 const app = new Hono<Env>();
 
-const PROD_ORIGINS = ["https://toban-maker.pages.dev"];
+const PROD_ORIGINS = ["https://toban.app"];
 const DEV_ORIGINS = [
-  "https://toban-maker.pages.dev",
+  "https://toban.app",
   "http://localhost:3000",
   "http://localhost:8788",
   "http://127.0.0.1:3000",

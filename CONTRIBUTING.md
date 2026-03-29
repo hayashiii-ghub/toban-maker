@@ -1,6 +1,6 @@
 # コントリビューションガイド
 
-toban-maker（当番表メーカー）への貢献に興味を持っていただきありがとうございます。
+toban（当番表メーカー）への貢献に興味を持っていただきありがとうございます。
 
 ## 前提条件
 
@@ -11,8 +11,8 @@ toban-maker（当番表メーカー）への貢献に興味を持っていただ
 
 ```bash
 # 1. リポジトリをフォーク & クローン
-git clone https://github.com/<your-username>/toban-maker.git
-cd toban-maker
+git clone https://github.com/<your-username>/toban.git
+cd toban
 
 # 2. 依存パッケージをインストール
 pnpm install
