@@ -14,7 +14,7 @@ interface ScheduleTabsProps {
   onDragOver: (event: DragEvent<HTMLButtonElement>, scheduleId: string) => void;
   onDrop: (event: DragEvent<HTMLButtonElement>, scheduleId: string) => void;
   onDragEnd: () => void;
-  onReorderTab?: (scheduleId: string, direction: "left" | "right") => void;
+  onReorderTab: (scheduleId: string, direction: "left" | "right") => void;
 }
 
 export function ScheduleTabs({
@@ -73,7 +73,7 @@ export function ScheduleTabs({
     switch (e.key) {
       case "ArrowRight": {
         e.preventDefault();
-        if (e.altKey && onReorderTab) {
+        if (e.altKey) {
           const schedule = sortedSchedules[index];
           if (!schedule?.pinned) onReorderTab(scheduleId, "right");
         } else {
@@ -84,7 +84,7 @@ export function ScheduleTabs({
       }
       case "ArrowLeft": {
         e.preventDefault();
-        if (e.altKey && onReorderTab) {
+        if (e.altKey) {
           const schedule = sortedSchedules[index];
           if (!schedule?.pinned) onReorderTab(scheduleId, "left");
         } else {
