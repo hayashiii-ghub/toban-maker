@@ -366,7 +366,7 @@ export const TEMPLATE_SEO_DATA: TemplateSEO[] = [
     title: "イベント準備チェックリストテンプレート｜無料で作成・印刷",
     description: "イベント準備のチェックリストを無料で作成。会場予約・備品準備・告知・当日運営・撤収をチームで分担管理。登録不要。",
     heading: "イベント準備チェックリストテンプレート",
-    intro: "会場の予約・下見、備品・機材の準備、告知・案内状の作成、当日の受付・誘導、撤収・片付けの5つのタスクをチームで分担。当番表メーカーをやることリストとしても活用できます。",
+    intro: "会場の予約・下見、備品・機材の準備、告知・案内状の作成、当日の受付・誘導、撤収・片付けの5つのタスクをチームで分担。tobanをやることリストとしても活用できます。",
     categoryId: "checklist",
   },
   {
@@ -410,7 +410,7 @@ export function getTemplatesByCategory(): Map<string, TemplateSEO[]> {
 /** 共通FAQ（全テンプレートページに表示） */
 export const COMMON_FAQ = [
   {
-    question: "当番表メーカーは無料ですか？",
+    question: "tobanは無料ですか？",
     answer: "はい、完全無料でお使いいただけます。アカウント登録も不要で、ブラウザだけですぐに当番表を作成できます。",
   },
   {

@@ -21,10 +21,10 @@ export default function TemplateDetailPage() {
 
   useEffect(() => {
     if (seo) {
-      document.title = seo.title + "｜当番表メーカー";
+      document.title = seo.title + "｜toban（トバン）";
     }
     return () => {
-      document.title = "当番表メーカー｜無料で当番表を作成・印刷・共有";
+      document.title = "toban（トバン）｜無料で当番表を作成・印刷・共有";
     };
   }, [seo]);
 
@@ -35,7 +35,7 @@ export default function TemplateDetailPage() {
       {/* パンくず */}
       <nav className="px-4 pt-6 pb-2 max-w-3xl mx-auto" aria-label="パンくず">
         <ol className="flex flex-wrap items-center gap-1 text-xs text-gray-500">
-          <li><Link href="/" className="hover:underline text-amber-700">当番表メーカー</Link></li>
+          <li><Link href="/" className="hover:underline text-amber-700">toban</Link></li>
           <li aria-hidden="true">/</li>
           <li><Link href="/templates" className="hover:underline text-amber-700">テンプレート一覧</Link></li>
           <li aria-hidden="true">/</li>
@@ -136,7 +136,7 @@ export default function TemplateDetailPage() {
       {/* 機能紹介 */}
       <section className="px-4 pb-10 max-w-3xl mx-auto">
         <h2 className="text-lg font-extrabold text-gray-900 mb-4">
-          当番表メーカーの特徴
+          tobanの特徴
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
@@ -240,7 +240,7 @@ export default function TemplateDetailPage() {
                 {
                   "@type": "ListItem",
                   position: 1,
-                  name: "当番表メーカー",
+                  name: "toban",
                   item: window.location.origin + "/",
                 },
                 {

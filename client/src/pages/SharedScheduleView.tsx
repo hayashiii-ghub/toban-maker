@@ -75,7 +75,7 @@ export default function SharedScheduleView() {
   const scheduleName = schedule?.name;
   useEffect(() => {
     if (scheduleName) {
-      document.title = `${scheduleName} - 当番表メーカー`;
+      document.title = `${scheduleName} - toban`;
     }
     return () => {
       document.title = APP_TITLE;

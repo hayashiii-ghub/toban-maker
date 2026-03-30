@@ -12,8 +12,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "当番表メーカー",
-        short_name: "当番表",
+        name: "toban — かんたん当番表",
+        short_name: "toban",
         description: "掃除当番・給食当番・日直などのローテーション表を作成・印刷・共有",
         theme_color: "#FFF0F2",
         background_color: "#FFF0F2",

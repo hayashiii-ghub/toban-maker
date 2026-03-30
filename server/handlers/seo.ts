@@ -58,11 +58,11 @@ export async function handleScheduleOgp(
 
   html = html.replace(
     /<title>[^<]*<\/title>/,
-    `<title>${title} - 当番表メーカー</title>`,
+    `<title>${title} - toban</title>`,
   );
 
   const ogTags = [
-    `<meta property="og:title" content="${title} - 当番表メーカー" />`,
+    `<meta property="og:title" content="${title} - toban" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${ogUrl}" />`,
     `<meta property="og:type" content="website" />`,
@@ -81,7 +81,7 @@ export async function handleScheduleOgp(
 // ─── テンプレートページのプリレンダリング (bot用) ───
 
 export function renderTemplateListHtml(origin: string): string {
-  const title = "当番表テンプレート一覧｜無料で使える当番表メーカー";
+  const title = "当番表テンプレート一覧｜無料で使えるtoban（トバン）";
   const desc = `掃除当番・給食当番・日直など、すぐ使える無料テンプレートを${TEMPLATE_SEO_DATA.length}種類ご用意。テンプレートを選んで、メンバーや担当を編集するだけで当番表が完成します。`;
 
   const categoryHtml = TEMPLATE_CATEGORIES.map((cat) => {
@@ -120,12 +120,12 @@ export function renderTemplateListHtml(origin: string): string {
 <meta property="og:type" content="website">
 <meta property="og:image" content="${origin}/pwa-512.png">
 <meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="当番表メーカー">
+<meta property="og:site_name" content="toban">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqSchema}</script>
 </head>
 <body>
-<header><nav><a href="${origin}/">当番表メーカー</a> / <span>テンプレート一覧</span></nav></header>
+<header><nav><a href="${origin}/">toban</a> / <span>テンプレート一覧</span></nav></header>
 <main>
 <h1>${escapeHtml(title)}</h1>
 <p>${escapeHtml(desc)}</p>
@@ -133,7 +133,7 @@ ${categoryHtml}
 <h2>よくある質問</h2>
 <dl>${COMMON_FAQ.map((f) => `<dt>${escapeHtml(f.question)}</dt><dd>${escapeHtml(f.answer)}</dd>`).join("")}</dl>
 </main>
-<footer><a href="${origin}/">当番表メーカー トップへ</a></footer>
+<footer><a href="${origin}/">toban トップへ</a></footer>
 </body>
 </html>`;
 }
@@ -143,7 +143,7 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
   if (!seo) return null;
 
   const cat = TEMPLATE_CATEGORIES.find((c) => c.id === seo.categoryId);
-  const fullTitle = `${seo.title}｜当番表メーカー`;
+  const fullTitle = `${seo.title}｜toban（トバン）`;
 
   const faqAndBreadcrumb = JSON.stringify([
     {
@@ -159,7 +159,7 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "当番表メーカー", item: `${origin}/` },
+        { "@type": "ListItem", position: 1, name: "toban", item: `${origin}/` },
         { "@type": "ListItem", position: 2, name: "テンプレート一覧", item: `${origin}/templates` },
         { "@type": "ListItem", position: 3, name: seo.heading },
       ],
@@ -180,12 +180,12 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
 <meta property="og:type" content="article">
 <meta property="og:image" content="${origin}/pwa-512.png">
 <meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="当番表メーカー">
+<meta property="og:site_name" content="toban">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqAndBreadcrumb}</script>
 </head>
 <body>
-<header><nav><a href="${origin}/">当番表メーカー</a> / <a href="${origin}/templates">テンプレート一覧</a> / <span>${escapeHtml(seo.heading)}</span></nav></header>
+<header><nav><a href="${origin}/">toban</a> / <a href="${origin}/templates">テンプレート一覧</a> / <span>${escapeHtml(seo.heading)}</span></nav></header>
 <main>
 ${cat ? `<p>${cat.emoji} ${escapeHtml(cat.label)}</p>` : ""}
 <h1>${escapeHtml(seo.heading)}</h1>
@@ -194,7 +194,7 @@ ${cat ? `<p>${cat.emoji} ${escapeHtml(cat.label)}</p>` : ""}
 <h2>よくある質問</h2>
 <dl>${COMMON_FAQ.map((f) => `<dt>${escapeHtml(f.question)}</dt><dd>${escapeHtml(f.answer)}</dd>`).join("")}</dl>
 </main>
-<footer><a href="${origin}/templates">テンプレート一覧に戻る</a> | <a href="${origin}/">当番表メーカー トップへ</a></footer>
+<footer><a href="${origin}/templates">テンプレート一覧に戻る</a> | <a href="${origin}/">toban トップへ</a></footer>
 </body>
 </html>`;
 }
