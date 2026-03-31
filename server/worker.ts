@@ -26,6 +26,8 @@ const HTML_SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Content-Security-Policy":
     "object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 };
 
 function withSecurityHeaders(response: Response): Response {
@@ -107,7 +109,8 @@ export default {
     try {
       const cutoff = new Date(Date.now() - CLEANUP_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
       const db = drizzle(env.DB);
-      await db.delete(schedules).where(lt(schedules.updatedAt, cutoff));
+      const result = await db.delete(schedules).where(lt(schedules.updatedAt, cutoff));
+      console.log(`Scheduled cleanup completed: cutoff=${cutoff}, deleted=${result.meta?.changes ?? "unknown"}`);
     } catch (error) {
       console.error("Scheduled cleanup failed:", error);
     }

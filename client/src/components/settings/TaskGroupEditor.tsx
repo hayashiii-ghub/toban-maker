@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Plus } from "lucide-react";
 import type { AssignmentMode, TaskGroup, Member } from "@/rotation/types";
 import { MEMBER_PRESETS, colorPresetFromHex } from "@/rotation/constants";
@@ -32,14 +32,20 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
 
   // --- 詳細展開 ---
   const [openDetailsKey, setOpenDetailsKey] = useState<string | null>(null);
-  const handleToggleDetails = (key: string) => setOpenDetailsKey(openDetailsKey === key ? null : key);
+  const handleToggleDetails = useCallback(
+    (key: string) => setOpenDetailsKey((prev) => (prev === key ? null : key)),
+    [],
+  );
 
   // --- 一括追加 ---
   const [bulkMode, setBulkMode] = useState(members.length <= 1);
 
   // --- カラーパレット ---
   const [openColorKey, setOpenColorKey] = useState<string | null>(null);
-  const handleToggleColor = (key: string) => setOpenColorKey(openColorKey === key ? null : key);
+  const handleToggleColor = useCallback(
+    (key: string) => setOpenColorKey((prev) => (prev === key ? null : key)),
+    [],
+  );
 
   const updateMemberColor = (memberId: string, presetIdx: number) => {
     const preset = MEMBER_PRESETS[presetIdx];
@@ -96,10 +102,10 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
     setDropTarget(null);
   };
 
-  const handleTaskDragEnd = () => {
+  const handleTaskDragEnd = useCallback(() => {
     setDragTask(null);
     setDropTarget(null);
-  };
+  }, []);
 
   const handleGroupDropZone = (e: React.DragEvent, gIdx: number) => {
     e.preventDefault();
@@ -160,10 +166,10 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
     setDropGroupIdx(null);
   };
 
-  const handleGroupReorderDragEnd = () => {
+  const handleGroupReorderDragEnd = useCallback(() => {
     setDragGroupIdx(null);
     setDropGroupIdx(null);
-  };
+  }, []);
 
   // --- メンバー行ドラッグ&ドロップ（タスクモード用） ---
   const [dragMember, setDragMember] = useState<{ gIdx: number; mIdx: number } | null>(null);
@@ -215,10 +221,10 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
     setDropMemberTarget(null);
   };
 
-  const handleMemberDragEnd = () => {
+  const handleMemberDragEnd = useCallback(() => {
     setDragMember(null);
     setDropMemberTarget(null);
-  };
+  }, []);
 
   // --- メンバーグループ操作（タスクモード） ---
   const removeMemberFromGroup = (gIdx: number, memberId: string) => {
@@ -340,7 +346,7 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
     );
   };
 
-  const contextValue: GroupCardContextValue = {
+  const contextValue: GroupCardContextValue = useMemo(() => ({
     isTaskMode,
     activeMembers,
     activeMemberIds,
@@ -384,7 +390,15 @@ export function TaskGroupEditor({ groups, members, onGroupsChange, onMembersChan
     onMemberDragOver: handleMemberDragOver,
     onMemberDrop: handleMemberDrop,
     onMemberDragEnd: handleMemberDragEnd,
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are recreated when groups/members change; useMemo prevents re-renders on unrelated state (bulkMode)
+  }), [
+    isTaskMode, activeMembers, activeMemberIds, membersById,
+    openDetailsKey, openColorKey,
+    dragGroupIdx, dragTask, dropTarget, dragMember, dropMemberTarget,
+    groups, members, onGroupsChange, onMembersChange,
+    handleToggleDetails, handleToggleColor,
+    handleTaskDragEnd, handleGroupReorderDragEnd, handleMemberDragEnd,
+  ]);
 
   return (
     <div className="flex flex-col gap-3">

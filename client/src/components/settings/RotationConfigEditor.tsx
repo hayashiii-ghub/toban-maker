@@ -58,7 +58,7 @@ export function RotationConfigEditor({ config, onUpdate }: Props) {
                   value={config.cycleDays || 1}
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
-                    if (v > 0) onUpdate((prev) => ({ ...prev, cycleDays: v }));
+                    if (v > 0 && v <= 365) onUpdate((prev) => ({ ...prev, cycleDays: v }));
                   }}
                   className="settings-number-input w-10 bg-transparent text-center outline-none"
                 />

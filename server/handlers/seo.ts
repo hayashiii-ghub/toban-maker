@@ -333,8 +333,8 @@ export async function handleSitemap(origin: string, env: Env): Promise<Response>
     <priority>0.5</priority>
   </url>`;
     }
-  } catch {
-    // DB障害時はスケジュールなしで返す
+  } catch (error) {
+    console.error("[sitemap] DB query failed, returning sitemap without schedules:", error);
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

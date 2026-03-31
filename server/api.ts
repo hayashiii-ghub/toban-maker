@@ -23,7 +23,8 @@ app.use(
   "/api/*",
   cors({
     origin: (origin, c) => {
-      const origins = c.env.ENVIRONMENT === "development" ? DEV_ORIGINS : PROD_ORIGINS;
+      const isDev = c.env.ENVIRONMENT !== undefined && c.env.ENVIRONMENT === "development";
+      const origins = isDev ? DEV_ORIGINS : PROD_ORIGINS;
       return origins.includes(origin) ? origin : null;
     },
   }),
@@ -37,6 +38,8 @@ app.use("/api/*", async (c, next) => {
   await next();
   c.header("X-Content-Type-Options", "nosniff");
   c.header("X-Frame-Options", "DENY");
+  c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 });
 
 // メモリベース簡易レート制限（Workerインスタンス単位）
@@ -79,6 +82,8 @@ app.use("/api/*", async (c, next) => {
   entry.count++;
 
   if (entry.count > getMaxRequests(method)) {
+    const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+    c.header("Retry-After", String(retryAfter > 0 ? retryAfter : 1));
     return c.json({ error: "Too many requests" }, 429);
   }
 
@@ -91,11 +96,8 @@ app.get("/api/health/schema", async (c) => {
   c.header("Cache-Control", "no-store");
   c.header("X-Robots-Tag", "noindex");
 
-  return c.json({
-    ok: status.missingColumns.length === 0,
-    ...status,
-    lastAutoRepair: getLastSchedulesSchemaRepair(),
-  }, status.missingColumns.length === 0 ? 200 : 503);
+  const ok = status.missingColumns.length === 0;
+  return c.json({ ok }, ok ? 200 : 503);
 });
 
 app.route("/api/schedules", scheduleRoutes);

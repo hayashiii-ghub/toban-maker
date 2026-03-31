@@ -34,19 +34,21 @@ export function useScheduleManager() {
   }, []);
 
   const handleDeleteSchedule = useCallback((scheduleId: string) => {
+    // API呼び出しはsetState外で行う（state updaterは複数回呼ばれる可能性があるため）
+    const schedule = state.schedules.find((s) => s.id === scheduleId);
+    if (state.schedules.length <= 1) return;
+
+    if (schedule?.slug && schedule?.editToken) {
+      deleteSchedule(schedule.slug, schedule.editToken).catch((error) => {
+        console.error("Failed to delete schedule from server:", error);
+        toast.error("サーバーからの削除に失敗しました");
+      });
+    }
+
     startTransition(() => {
       setState((prev) => {
-        if (prev.schedules.length <= 1) return prev;
-
-        const schedule = prev.schedules.find((s) => s.id === scheduleId);
-        if (schedule?.slug && schedule?.editToken) {
-          deleteSchedule(schedule.slug, schedule.editToken).catch((error) => {
-            console.error("Failed to delete schedule from server:", error);
-            toast.error("サーバーからの削除に失敗しました");
-          });
-        }
-
         const remainingSchedules = prev.schedules.filter((s) => s.id !== scheduleId);
+        if (remainingSchedules.length === 0) return prev;
         return {
           schedules: remainingSchedules,
           activeScheduleId: prev.activeScheduleId === scheduleId
@@ -55,7 +57,7 @@ export function useScheduleManager() {
         };
       });
     });
-  }, []);
+  }, [state.schedules]);
 
   const handleDuplicateSchedule = useCallback(() => {
     if (!activeSchedule) return;
