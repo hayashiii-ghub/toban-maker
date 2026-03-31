@@ -14,6 +14,7 @@ const contactSchema = z.object({
 
 /** メール用文字列から制御文字を除去 */
 function sanitizeControlChars(str: string): string {
+  // eslint-disable-next-line no-control-regex -- 意図的に制御文字を除去している
   return str.replace(/[\r\n\t\x00-\x1f]/g, " ").trim();
 }
 
