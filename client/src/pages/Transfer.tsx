@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
+import { z } from "zod";
 import { loadState, saveState, generateId } from "@/rotation/utils";
 import { ApiError, getScheduleForEdit } from "@/lib/api";
 import { decodeShareTransferData } from "@/lib/shareTransfer";
 import { Loader2 } from "lucide-react";
+
+const transferDataSchema = z.object({
+  slug: z.string().min(1),
+  editToken: z.string().min(1),
+  name: z.string().min(1),
+});
 
 export default function Transfer() {
   const search = useSearch();
@@ -30,18 +37,14 @@ export default function Transfer() {
         return;
       }
 
-      let parsed: { slug?: string; editToken?: string; name?: string };
-      try {
-        parsed = JSON.parse(decoded);
-      } catch {
+      const parseResult = transferDataSchema.safeParse((() => {
+        try { return JSON.parse(decoded); } catch { return null; }
+      })());
+      if (!parseResult.success) {
         setError("転送データの形式が正しくありません");
         return;
       }
-
-      if (!parsed.slug || !parsed.editToken || !parsed.name) {
-        setError("転送データが不正です");
-        return;
-      }
+      const parsed = parseResult.data;
 
       try {
         const fetched = await getScheduleForEdit(parsed.slug, parsed.editToken);

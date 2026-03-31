@@ -113,7 +113,7 @@ app.post("/", async (c) => {
     }
   } catch (error) {
     logDatabaseError("create", error, { name: data.name });
-    return c.json({ error: "Database error", stage: "db_error" }, 500);
+    return c.json({ error: "Database error" }, 500);
   }
 
   return c.json({ error: "Failed to generate unique slug" }, 500);
@@ -162,7 +162,7 @@ app.post("/:slug/publish", async (c) => {
     await db.update(schedules).set({ isPublic: true, updatedAt: new Date().toISOString() }).where(eq(schedules.slug, slug));
   } catch (error) {
     logDatabaseError("publish", error, { slug });
-    return c.json({ error: "Database error", stage: "db_error" }, 500);
+    return c.json({ error: "Database error" }, 500);
   }
   return c.json({ ok: true });
 });
@@ -195,7 +195,7 @@ app.put("/:slug", async (c) => {
     }).where(eq(schedules.slug, slug));
   } catch (error) {
     logDatabaseError("update", error, { slug, name: data.name });
-    return c.json({ error: "Database error", stage: "db_error" }, 500);
+    return c.json({ error: "Database error" }, 500);
   }
   return c.json({ ok: true });
 });
@@ -210,7 +210,7 @@ app.delete("/:slug", async (c) => {
     await db.delete(schedules).where(eq(schedules.slug, slug));
   } catch (error) {
     logDatabaseError("delete", error, { slug });
-    return c.json({ error: "Database error", stage: "db_error" }, 500);
+    return c.json({ error: "Database error" }, 500);
   }
   return c.json({ ok: true });
 });

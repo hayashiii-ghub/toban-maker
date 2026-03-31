@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { eq } from "drizzle-orm";
 import { schedules } from "../db/schema";
 
-const SLUG_PATTERN = /^[a-zA-Z0-9_-]{10,}$/;
+const SLUG_PATTERN = /^[a-zA-Z0-9_-]{10,128}$/;
 
 export { SLUG_PATTERN };
 

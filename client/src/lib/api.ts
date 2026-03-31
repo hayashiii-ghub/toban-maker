@@ -55,7 +55,8 @@ async function fetchWithRetry(
       if (res.ok || !isRetriable(res.status)) return res;
       // 5xx: retry
       if (attempt < maxRetries) {
-        console.warn(`[api] サーバーエラー ${res.status}, リトライ ${attempt + 1}/${maxRetries}: ${String(input)}`);
+        const endpoint = typeof input === "string" ? input.split("?")[0] : "request";
+        console.warn(`[api] サーバーエラー ${res.status}, リトライ ${attempt + 1}/${maxRetries}: ${endpoint}`);
         await new Promise((r) => setTimeout(r, 1000 * 3 ** attempt));
         continue;
       }
@@ -63,7 +64,8 @@ async function fetchWithRetry(
     } catch (error) {
       // Network error: retry
       if (attempt < maxRetries) {
-        console.warn(`[api] ネットワークエラー, リトライ ${attempt + 1}/${maxRetries}: ${String(input)}`, error);
+        const endpoint = typeof input === "string" ? input.split("?")[0] : "request";
+        console.warn(`[api] ネットワークエラー, リトライ ${attempt + 1}/${maxRetries}: ${endpoint}`, error);
         await new Promise((r) => setTimeout(r, 1000 * 3 ** attempt));
         continue;
       }

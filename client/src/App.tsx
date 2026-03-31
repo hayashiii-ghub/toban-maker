@@ -1,31 +1,43 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import SharedScheduleView from "@/pages/SharedScheduleView";
 import { Route, Switch, useLocation } from "wouter";
-import { CircleHelp } from "lucide-react";
+import { CircleHelp, Loader2 } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
-import TemplatesPage from "./pages/TemplatesPage";
-import TemplateDetailPage from "./pages/TemplateDetailPage";
-import Transfer from "./pages/Transfer";
 
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
+const TemplateDetailPage = lazy(() => import("./pages/TemplateDetailPage"));
+const SharedScheduleView = lazy(() => import("./pages/SharedScheduleView"));
+const Transfer = lazy(() => import("./pages/Transfer"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+
+function LazyFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--dt-page-bg)" }}>
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--dt-current-highlight)" }} />
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/about"} component={LandingPage} />
-      <Route path={"/templates"} component={TemplatesPage} />
-      <Route path={"/templates/:slug"} component={TemplateDetailPage} />
-      <Route path={"/s/:slug"} component={SharedScheduleView} />
-      <Route path={"/transfer"} component={Transfer} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<LazyFallback />}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/about"} component={LandingPage} />
+        <Route path={"/templates"} component={TemplatesPage} />
+        <Route path={"/templates/:slug"} component={TemplateDetailPage} />
+        <Route path={"/s/:slug"} component={SharedScheduleView} />
+        <Route path={"/transfer"} component={Transfer} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

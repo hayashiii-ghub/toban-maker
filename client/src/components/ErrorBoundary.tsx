@@ -1,5 +1,6 @@
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
 import { Component, ReactNode } from "react";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,7 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("[ErrorBoundary] キャッチされたエラー:", error);
     console.error("[ErrorBoundary] コンポーネントスタック:", errorInfo.componentStack);
+    Sentry.captureException(error, { contexts: { react: { componentStack: errorInfo.componentStack ?? "" } } });
   }
 
   render() {

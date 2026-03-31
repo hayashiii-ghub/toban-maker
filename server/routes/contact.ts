@@ -12,8 +12,9 @@ const contactSchema = z.object({
   url: z.string().max(0).optional(),
 });
 
-/** メール subject に使用する文字列から制御文字を除去 */
-function sanitizeForSubject(str: string): string {
+/** メール用文字列から制御文字を除去 */
+function sanitizeControlChars(str: string): string {
+  // eslint-disable-next-line no-control-regex -- 意図的に制御文字を除去している
   return str.replace(/[\r\n\t\x00-\x1f]/g, " ").trim();
 }
 
@@ -36,15 +37,17 @@ app.post("/", async (c) => {
   }
 
   const { name, email, message } = parsed.data;
-  const safeName = sanitizeForSubject(name);
+  const safeName = sanitizeControlChars(name);
+  const safeEmail = sanitizeControlChars(email);
+  const safeMessage = sanitizeControlChars(message);
 
   const resend = new Resend(c.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
     from: "toban お問い合わせ <noreply@send.shigoto.dev>",
     to: "hay@shigoto.dev",
-    replyTo: email,
+    replyTo: safeEmail,
     subject: `[toban] お問い合わせ: ${safeName}`,
-    text: `名前: ${safeName}\nメール: ${email}\n\n${message}`,
+    text: `名前: ${safeName}\nメール: ${safeEmail}\n\n${safeMessage}`,
   });
 
   if (error) {

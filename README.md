@@ -65,8 +65,10 @@ pnpm dev:api      # Wrangler Pages dev サーバー (port 8788)
 pnpm dev:full     # フロント + API を同時起動
 pnpm build        # 本番ビルド
 pnpm check        # TypeScript 型チェック
-pnpm test         # テスト実行 (Vitest)
-pnpm test:coverage # テスト実行 + カバレッジレポート (v8)
+pnpm test         # ユニットテスト実行 (Vitest)
+pnpm test:coverage # ユニットテスト + カバレッジレポート (v8)
+pnpm test:e2e     # E2Eテスト実行 (Playwright)
+pnpm test:e2e:ui  # E2Eテスト (UIモード)
 pnpm lint         # ESLint
 pnpm db:migrate:local  # ローカル D1 に migration を適用
 pnpm run deploy:cf     # migration 適用込みで Cloudflare へデプロイ
@@ -76,14 +78,21 @@ pnpm run deploy:cf     # migration 適用込みで Cloudflare へデプロイ
 
 - 本番デプロイは `pnpm run deploy:cf` を正規ルートにしてください。
 - `wrangler deploy` 単体では D1 migration が適用されず、保存や共有が 500 になることがあります。
-- API には `GET /api/health/schema` を用意しており、必要カラムの不足有無と直近の自動補完結果を確認できます。
+- API には `GET /api/health/schema` を用意しており、スキーマの状態を確認できます（200: 正常 / 503: カラム不足）。
 - サーバーは安全網として不足カラムを自動補完しますが、基本は migration を先に適用する運用が前提です。
+
+## CI / 品質管理
+
+- **GitHub Actions CI** — push / PR で lint・型チェック・ユニットテスト・ビルド・E2Eテストを自動実行
+- **Lighthouse CI** — push / PR でパフォーマンス・アクセシビリティ・SEO のスコアを自動計測
+- **Sentry** — 本番環境でのランタイムエラーを自動収集（`VITE_SENTRY_DSN` 設定時のみ有効）
 
 ## 環境変数（Cloudflare側で設定）
 
 - `CLOUDFLARE_D1_DATABASE_ID` — D1 データベースID
 - `CLOUDFLARE_D1_PREVIEW_DATABASE_ID` — プレビュー用 D1 データベースID（任意）
 - `RESEND_API_KEY` — Resend APIキー（お問い合わせフォーム送信用、`wrangler secret put RESEND_API_KEY`）
+- `VITE_SENTRY_DSN` — Sentry DSN（任意、エラートラッキング用。ビルド時に `.env` または CI で設定）
 
 ## ライセンス
 
