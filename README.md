@@ -37,8 +37,8 @@
 ```
 ├── client/src/
 │   ├── pages/                # ページコンポーネント
-│   │   ├── LandingPage.tsx   # ランディングページ（/）
-│   │   ├── Home.tsx          # メインページ（/app — 当番表の作成・編集）
+│   │   ├── Home.tsx          # メインページ（/ — 当番表の作成・編集）
+│   │   ├── LandingPage.tsx   # ランディングページ（/about）
 │   │   ├── SharedScheduleView.tsx  # 共有リンクの閲覧ページ
 │   │   ├── TemplatesPage.tsx # テンプレート一覧（SEO用LP）
 │   │   ├── TemplateDetailPage.tsx # テンプレート詳細（個別LP）

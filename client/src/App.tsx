@@ -16,8 +16,8 @@ import Transfer from "./pages/Transfer";
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={LandingPage} />
-      <Route path={"/app"} component={Home} />
+      <Route path={"/"} component={Home} />
+      <Route path={"/about"} component={LandingPage} />
       <Route path={"/templates"} component={TemplatesPage} />
       <Route path={"/templates/:slug"} component={TemplateDetailPage} />
       <Route path={"/s/:slug"} component={SharedScheduleView} />
@@ -32,14 +32,14 @@ function Router() {
 function AppFooter() {
   const [location] = useLocation();
   // アプリ本体と共有ページのみ表示
-  const showFooter = location === "/app" || location.startsWith("/s/");
+  const showFooter = location === "/" || location.startsWith("/s/");
   if (!showFooter) return null;
 
   return (
     <footer className="py-2 pr-3 text-right print:hidden md:fixed md:bottom-0 md:right-0 md:z-50">
       <div className="flex items-center justify-end gap-1 md:inline-flex">
         <a
-          href="/"
+          href="/about"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground/60 hover:text-muted-foreground/80 hover:bg-muted/40 transition-colors"

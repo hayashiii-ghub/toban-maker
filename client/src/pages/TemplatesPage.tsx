@@ -90,7 +90,7 @@ export default function TemplatesPage() {
 
       {/* 固定CTAボタン */}
       <a
-        href="/app"
+        href="/"
         className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-xl bg-[#2E6B4F] hover:bg-[#245A41] text-white font-bold px-5 py-3 shadow-lg transition-colors print:hidden"
       >
         当番表を作る

@@ -145,7 +145,7 @@ export function renderLandingPageHtml(origin: string): string {
 <main>
 <h1>${escapeHtml(title)}</h1>
 <p>${escapeHtml(desc)}</p>
-<a href="${origin}/app">当番表を作る</a>
+<a href="${origin}/">当番表を作る</a>
 <h2>tobanの特徴</h2>
 <ul>
 <li>登録不要 — アカウント不要、ブラウザだけで完結</li>
@@ -159,7 +159,7 @@ export function renderLandingPageHtml(origin: string): string {
 <h2>よくある質問</h2>
 <dl>${faqHtml}</dl>
 </main>
-<footer><a href="${origin}/app">当番表を作る</a> | <a href="${origin}/templates">テンプレート一覧</a></footer>
+<footer><a href="${origin}/">当番表を作る</a> | <a href="${origin}/templates">テンプレート一覧</a></footer>
 </body>
 </html>`;
 }
@@ -276,7 +276,7 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
 ${cat ? `<p>${cat.emoji} ${escapeHtml(cat.label)}</p>` : ""}
 <h1>${escapeHtml(seo.heading)}</h1>
 <p>${escapeHtml(seo.intro)}</p>
-<a href="${origin}/app?template=${seo.templateIndex}">このテンプレートで当番表を作る</a>
+<a href="${origin}/?template=${seo.templateIndex}">このテンプレートで当番表を作る</a>
 <h2>よくある質問</h2>
 <dl>${COMMON_FAQ.map((f) => `<dt>${escapeHtml(f.question)}</dt><dd>${escapeHtml(f.answer)}</dd>`).join("")}</dl>
 </main>
@@ -356,7 +356,6 @@ export function handleRobots(origin: string): Response {
   const text = `User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /app
 Disallow: /transfer
 
 Sitemap: ${origin}/sitemap.xml

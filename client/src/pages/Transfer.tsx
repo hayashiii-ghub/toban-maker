@@ -79,7 +79,7 @@ export default function Transfer() {
             ? `「${fetched.name}」の編集権限を更新しました`
             : `「${fetched.name}」の編集権限を追加しました`,
         );
-        navigate("/app");
+        navigate("/");
       } catch (error) {
         if (cancelled) return;
         if (
@@ -104,7 +104,7 @@ export default function Transfer() {
         <div className="text-6xl">😢</div>
         <h1 className="text-xl font-bold" style={{ color: "var(--dt-text)" }}>{error}</h1>
         <a
-          href="/app"
+          href="/"
           className="theme-border theme-shadow-sm px-4 py-2 font-bold text-sm transition-all duration-150 theme-hover-lift"
           style={{ backgroundColor: "var(--dt-current-highlight)", borderRadius: "var(--dt-border-radius-sm)" }}
         >

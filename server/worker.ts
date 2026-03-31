@@ -61,7 +61,7 @@ export default {
     const botRequest = isBot(ua);
 
     // LP — bot用プリレンダリング
-    if (pathname === "/" && botRequest) {
+    if (pathname === "/about" && botRequest) {
       return withSecurityHeaders(new Response(renderLandingPageHtml(origin), {
         headers: {
           "Content-Type": "text/html; charset=utf-8",
@@ -98,15 +98,6 @@ export default {
           },
         }));
       }
-    }
-
-    // /app* — SPA フォールバック（静的ファイルが無い場合 index.html を返す）
-    if (pathname.startsWith("/app")) {
-      const assetResponse = await env.ASSETS.fetch(request);
-      if (assetResponse.status === 404) {
-        return withSecurityHeaders(await env.ASSETS.fetch(new Request(`${origin}/`, request)));
-      }
-      return withSecurityHeaders(assetResponse);
     }
 
     return withSecurityHeaders(await env.ASSETS.fetch(request));

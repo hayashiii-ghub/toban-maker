@@ -234,7 +234,7 @@ export default function LandingPage() {
             テンプレートを見る
           </Link>
           <Link
-            href="/app"
+            href="/"
             className="inline-flex items-center justify-center gap-2 rounded-xl font-bold px-8 py-3 text-base sm:text-lg shadow-lg transition-colors"
             style={{ backgroundColor: C.heroText, color: C.primary }}
           >
@@ -375,7 +375,7 @@ export default function LandingPage() {
       {/* ── フローティングCTA（ヒーローが見えなくなったら表示） ── */}
       {showFloatingCta && (
         <Link
-          href="/app"
+          href="/"
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-xl bg-[#2E6B4F] hover:bg-[#245A41] text-white font-bold px-5 py-3 shadow-lg transition-colors print:hidden"
         >
           当番表を作る
