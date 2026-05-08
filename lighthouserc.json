@@ -1,8 +1,12 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./dist",
-      "url": ["/", "/about", "/templates"],
+      "startServerCommand": "pnpm preview",
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/about",
+        "http://localhost:4173/templates"
+      ],
       "numberOfRuns": 1,
       "settings": {
         "preset": "desktop",
