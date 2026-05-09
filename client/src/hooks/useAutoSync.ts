@@ -50,7 +50,9 @@ function useAutoBackup(
   const backupInFlightRef = useRef(false);
   const backupPromiseRef = useRef<Promise<Schedule | undefined> | null>(null);
   const scheduleRef = useRef(schedule);
-  scheduleRef.current = schedule;
+  useEffect(() => {
+    scheduleRef.current = schedule;
+  }, [schedule]);
 
   const attemptAutoBackup = useCallback(async (s: Schedule) => {
     // 最新の状態を再チェック — 別の経路で既に slug が付与されていたらスキップ
