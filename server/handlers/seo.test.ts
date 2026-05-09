@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { buildSocialMetaTags } from "./seo";
+import {
+  buildSocialMetaTags,
+  renderLandingPageHtml,
+  renderTemplateListHtml,
+  renderTemplateDetailHtml,
+} from "./seo";
 
 describe("buildSocialMetaTags", () => {
   it("includes og:title, og:description, og:url, og:type", () => {
@@ -62,5 +67,37 @@ describe("buildSocialMetaTags", () => {
     expect(html).toContain("&quot;危険な&quot;");
     expect(html).toContain("&lt;タグ&gt;");
     expect(html).toContain("A &amp; B");
+  });
+});
+
+describe("render functions emit consistent OGP/Twitter tags", () => {
+  const origin = "https://toban.app";
+
+  it("renderLandingPageHtml uses /og-image.png and twitter card", () => {
+    const html = renderLandingPageHtml(origin);
+    expect(html).toContain('<meta property="og:image" content="https://toban.app/og-image.png">');
+    expect(html).toContain('<meta property="og:image:width" content="1200">');
+    expect(html).toContain('<meta property="og:image:height" content="630">');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(html).toContain('<meta name="twitter:image" content="https://toban.app/og-image.png">');
+    expect(html).not.toMatch(/property="og:image"[^>]*pwa-512/);
+    expect(html).not.toMatch(/name="twitter:image"[^>]*pwa-512/);
+  });
+
+  it("renderTemplateListHtml uses /og-image.png and twitter card", () => {
+    const html = renderTemplateListHtml(origin);
+    expect(html).toContain('<meta property="og:image" content="https://toban.app/og-image.png">');
+    expect(html).toContain('<meta property="og:image:width" content="1200">');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(html).toContain('<meta name="twitter:image" content="https://toban.app/og-image.png">');
+  });
+
+  it("renderTemplateDetailHtml uses /og-image.png and twitter card", () => {
+    const html = renderTemplateDetailHtml(origin, "office-cleaning");
+    expect(html).not.toBeNull();
+    expect(html).toContain('<meta property="og:image" content="https://toban.app/og-image.png">');
+    expect(html).toContain('<meta property="og:image:width" content="1200">');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(html).toContain('<meta name="twitter:image" content="https://toban.app/og-image.png">');
   });
 });

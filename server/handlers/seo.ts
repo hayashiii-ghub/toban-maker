@@ -156,19 +156,7 @@ export function renderLandingPageHtml(origin: string): string {
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(desc)}">
 <link rel="canonical" href="${origin}/">
-<meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(desc)}">
-<meta property="og:url" content="${origin}/">
-<meta property="og:type" content="website">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escapeHtml(title)}">
-<meta name="twitter:description" content="${escapeHtml(desc)}">
-<meta name="twitter:image" content="${origin}/pwa-512.png">
+${buildSocialMetaTags({ title, description: desc, url: `${origin}/`, origin, type: "website" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${schema}</script>
 </head>
@@ -231,13 +219,7 @@ export function renderTemplateListHtml(origin: string): string {
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(desc)}">
 <link rel="canonical" href="${origin}/templates">
-<meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(desc)}">
-<meta property="og:url" content="${origin}/templates">
-<meta property="og:type" content="website">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
+${buildSocialMetaTags({ title, description: desc, url: `${origin}/templates`, origin, type: "website" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqSchema}</script>
 </head>
@@ -291,13 +273,7 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
 <title>${escapeHtml(fullTitle)}</title>
 <meta name="description" content="${escapeHtml(seo.description)}">
 <link rel="canonical" href="${origin}/templates/${slug}">
-<meta property="og:title" content="${escapeHtml(fullTitle)}">
-<meta property="og:description" content="${escapeHtml(seo.description)}">
-<meta property="og:url" content="${origin}/templates/${slug}">
-<meta property="og:type" content="article">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
+${buildSocialMetaTags({ title: fullTitle, description: seo.description, url: `${origin}/templates/${slug}`, origin, type: "article" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqAndBreadcrumb}</script>
 </head>
