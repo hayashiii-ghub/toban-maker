@@ -30,6 +30,37 @@ export function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+// ─── ソーシャルメタタグ生成（OGP + Twitter Card） ───
+
+export function buildSocialMetaTags(args: {
+  title: string;
+  description: string;
+  url: string;
+  origin: string;
+  type?: "website" | "article";
+}): string {
+  const t = args.type ?? "website";
+  const safeTitle = escapeHtml(args.title);
+  const safeDesc = escapeHtml(args.description);
+  const safeUrl = escapeHtml(args.url);
+  const imageUrl = `${args.origin}/og-image.png`;
+  return [
+    `<meta property="og:title" content="${safeTitle}">`,
+    `<meta property="og:description" content="${safeDesc}">`,
+    `<meta property="og:url" content="${safeUrl}">`,
+    `<meta property="og:type" content="${t}">`,
+    `<meta property="og:image" content="${imageUrl}">`,
+    `<meta property="og:image:width" content="1200">`,
+    `<meta property="og:image:height" content="630">`,
+    `<meta property="og:locale" content="ja_JP">`,
+    `<meta property="og:site_name" content="toban">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${safeTitle}">`,
+    `<meta name="twitter:description" content="${safeDesc}">`,
+    `<meta name="twitter:image" content="${imageUrl}">`,
+  ].join("\n");
+}
+
 // ─── 共有スケジュールのOGP注入 ───
 
 export async function handleScheduleOgp(
@@ -49,26 +80,24 @@ export async function handleScheduleOgp(
     return new Response("Not found", { status: 404 });
   }
 
-  const title = escapeHtml(schedule.name);
-  const description = escapeHtml(`「${schedule.name}」の当番表`);
-  const ogUrl = escapeHtml(url.href);
-
   const assetResponse = await env.ASSETS.fetch(new Request(`${url.origin}/`));
   let html = await assetResponse.text();
 
   html = html.replace(
     /<title>[^<]*<\/title>/,
-    `<title>${title} - toban</title>`,
+    `<title>${escapeHtml(schedule.name)} - toban</title>`,
   );
 
-  const ogTags = [
-    `<meta property="og:title" content="${title} - toban" />`,
-    `<meta property="og:description" content="${description}" />`,
-    `<meta property="og:url" content="${ogUrl}" />`,
-    `<meta property="og:type" content="website" />`,
-  ].join("\n    ");
+  const ogTags = buildSocialMetaTags({
+    title: `${schedule.name} - toban`,
+    description: `「${schedule.name}」の当番表`,
+    url: url.href,
+    origin: url.origin,
+    type: "website",
+  });
 
-  html = html.replace("</head>", `    ${ogTags}\n  </head>`);
+  const indentedOgTags = ogTags.split("\n").map((line) => `    ${line}`).join("\n");
+  html = html.replace("</head>", `${indentedOgTags}\n  </head>`);
 
   return new Response(html, {
     headers: {
@@ -125,19 +154,7 @@ export function renderLandingPageHtml(origin: string): string {
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(desc)}">
 <link rel="canonical" href="${origin}/">
-<meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(desc)}">
-<meta property="og:url" content="${origin}/">
-<meta property="og:type" content="website">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escapeHtml(title)}">
-<meta name="twitter:description" content="${escapeHtml(desc)}">
-<meta name="twitter:image" content="${origin}/pwa-512.png">
+${buildSocialMetaTags({ title, description: desc, url: `${origin}/`, origin, type: "website" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${schema}</script>
 </head>
@@ -200,13 +217,7 @@ export function renderTemplateListHtml(origin: string): string {
 <title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(desc)}">
 <link rel="canonical" href="${origin}/templates">
-<meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(desc)}">
-<meta property="og:url" content="${origin}/templates">
-<meta property="og:type" content="website">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
+${buildSocialMetaTags({ title, description: desc, url: `${origin}/templates`, origin, type: "website" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqSchema}</script>
 </head>
@@ -252,6 +263,26 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
     },
   ]);
 
+  const sameCategory = TEMPLATE_SEO_DATA.filter(
+    (t) => t.categoryId === seo.categoryId && t.slug !== slug,
+  );
+  const otherCategory = TEMPLATE_SEO_DATA.filter(
+    (t) => t.categoryId !== seo.categoryId,
+  );
+  const relatedTemplates = [
+    ...sameCategory,
+    ...otherCategory.slice(0, Math.max(0, 4 - sameCategory.length)),
+  ].slice(0, 4);
+
+  const relatedHtml = relatedTemplates.length > 0
+    ? `<section><h2>関連するテンプレート</h2><ul>${relatedTemplates
+        .map(
+          (t) =>
+            `<li><a href="${origin}/templates/${t.slug}">${escapeHtml(t.heading)}</a></li>`,
+        )
+        .join("")}</ul></section>`
+    : "";
+
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -260,13 +291,7 @@ export function renderTemplateDetailHtml(origin: string, slug: string): string |
 <title>${escapeHtml(fullTitle)}</title>
 <meta name="description" content="${escapeHtml(seo.description)}">
 <link rel="canonical" href="${origin}/templates/${slug}">
-<meta property="og:title" content="${escapeHtml(fullTitle)}">
-<meta property="og:description" content="${escapeHtml(seo.description)}">
-<meta property="og:url" content="${origin}/templates/${slug}">
-<meta property="og:type" content="article">
-<meta property="og:image" content="${origin}/pwa-512.png">
-<meta property="og:locale" content="ja_JP">
-<meta property="og:site_name" content="toban">
+${buildSocialMetaTags({ title: fullTitle, description: seo.description, url: `${origin}/templates/${slug}`, origin, type: "article" })}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script type="application/ld+json">${faqAndBreadcrumb}</script>
 </head>
@@ -277,6 +302,7 @@ ${cat ? `<p>${cat.emoji} ${escapeHtml(cat.label)}</p>` : ""}
 <h1>${escapeHtml(seo.heading)}</h1>
 <p>${escapeHtml(seo.intro)}</p>
 <a href="${origin}/?template=${seo.templateIndex}">このテンプレートで当番表を作る</a>
+${relatedHtml}
 <h2>よくある質問</h2>
 <dl>${COMMON_FAQ.map((f) => `<dt>${escapeHtml(f.question)}</dt><dd>${escapeHtml(f.answer)}</dd>`).join("")}</dl>
 </main>
