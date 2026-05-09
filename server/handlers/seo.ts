@@ -30,6 +30,37 @@ export function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+// ─── ソーシャルメタタグ生成（OGP + Twitter Card） ───
+
+export function buildSocialMetaTags(args: {
+  title: string;
+  description: string;
+  url: string;
+  origin: string;
+  type?: "website" | "article";
+}): string {
+  const t = args.type ?? "website";
+  const safeTitle = escapeHtml(args.title);
+  const safeDesc = escapeHtml(args.description);
+  const safeUrl = escapeHtml(args.url);
+  const imageUrl = `${args.origin}/og-image.png`;
+  return [
+    `<meta property="og:title" content="${safeTitle}">`,
+    `<meta property="og:description" content="${safeDesc}">`,
+    `<meta property="og:url" content="${safeUrl}">`,
+    `<meta property="og:type" content="${t}">`,
+    `<meta property="og:image" content="${imageUrl}">`,
+    `<meta property="og:image:width" content="1200">`,
+    `<meta property="og:image:height" content="630">`,
+    `<meta property="og:locale" content="ja_JP">`,
+    `<meta property="og:site_name" content="toban">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${safeTitle}">`,
+    `<meta name="twitter:description" content="${safeDesc}">`,
+    `<meta name="twitter:image" content="${imageUrl}">`,
+  ].join("\n");
+}
+
 // ─── 共有スケジュールのOGP注入 ───
 
 export async function handleScheduleOgp(
